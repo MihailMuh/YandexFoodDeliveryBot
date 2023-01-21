@@ -23,7 +23,7 @@ public class AddressCache {
         addressesOperations.set(chatId, addressCache);
     }
 
-    public Address getAddresses(long chatId) {
+    public Address getAddress(long chatId) {
         Address address = addressesOperations.get(chatId);
         if (address == null) {
             return new Address("", "");

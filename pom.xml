@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.0.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>com.mihalis</groupId>
     <artifactId>yandex-food-delivery-bot</artifactId>
@@ -16,12 +16,14 @@
 
     <properties>
         <java.version>17</java.version>
+        <lombok.version>1.18.24</lombok.version>
         <telegram.version>6.4.0</telegram.version>
         <netty.version>4.1.87.Final</netty.version>
-
+        <spring.version>6.0.4</spring.version>
     </properties>
 
     <dependencies>
+        <!-- native redis unix socket support -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-native-epoll</artifactId>
@@ -29,13 +31,7 @@
             <version>${netty.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-transport-native-kqueue</artifactId>
-            <classifier>osx-x86_64</classifier>
-            <version>${netty.version}</version>
-        </dependency>
-
+        <!-- telegram bot api -->
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots</artifactId>
@@ -47,30 +43,41 @@
             <version>${telegram.version}</version>
         </dependency>
 
+        <!-- redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+            <version>${parent.version}</version>
         </dependency>
+
+        <!-- tomcat, etc -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>${parent.version}</version>
         </dependency>
 
+        <!-- lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+            <version>${lombok.version}</version>
         </dependency>
+
+        <!-- spring boot tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <version>${parent.version}</version>
         </dependency>
 
+        <!-- spring indexer - performance improvement -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-indexer</artifactId>
-            <optional>true</optional>
+            <version>${spring.version}</version>
         </dependency>
     </dependencies>
 
@@ -94,5 +101,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

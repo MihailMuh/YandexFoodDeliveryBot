@@ -41,7 +41,7 @@ public class AddressCommand extends BaseCommand {
     }
 
     private void sendCurrentAddress(Bot bot, Message message) {
-        String currentAddress = addressesCache.getAddresses(message.getChatId()).address();
+        String currentAddress = addressesCache.getAddress(message.getChatId()).address();
         if (currentAddress.length() != 0) {
             bot.executeAsync("Твой текущий адрес: " + currentAddress, message);
         }
