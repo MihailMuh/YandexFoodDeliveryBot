@@ -20,9 +20,34 @@
         <telegram.version>6.4.0</telegram.version>
         <netty.version>4.1.87.Final</netty.version>
         <spring.version>6.0.4</spring.version>
+        <selenium.version>4.7.2</selenium.version>
+        <driver-manager.version>5.3.2</driver-manager.version>
+        <apache-http.version>5.2.1</apache-http.version>
+        <apache-utils.version>3.0</apache-utils.version>
     </properties>
 
     <dependencies>
+        <!-- web driver manager dependency -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>${apache-http.version}</version>
+        </dependency>
+
+        <!-- web driver manager -->
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>${driver-manager.version}</version>
+        </dependency>
+
+        <!-- selenium -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+
         <!-- native redis unix socket support -->
         <dependency>
             <groupId>io.netty</groupId>

@@ -16,7 +16,13 @@ public class AddressCommand extends BaseCommand {
 
     private final InlineKeyboardMarkup cancelKeyboard;
 
-    private static final String conditionMessage = "Новый адрес должен быть в формате:\nГород, улица, дом";
+    private static final String conditionMessage =
+            "Новый адрес должен быть в формате:\n" +
+                    "Город, улица, дом\n\n" +
+                    "Например:\n" +
+                    "Екатеринбург, улица Малышева, 53А\n\n" +
+                    "Вводи адрес, соблюдая этот формат! Если в течение 5 попыток я не найду этот адрес в " +
+                    "яндекс картах, будешь вводить по-новой";
 
     public AddressCommand(AddressCache addressCache, InlineKeyboardMarkup cancelKeyboard,
                           SelectNewAddressCache selectNewAddressCache) {
@@ -41,8 +47,8 @@ public class AddressCommand extends BaseCommand {
     }
 
     private void sendCurrentAddress(Bot bot, Message message) {
-        String currentAddress = addressesCache.getAddress(message.getChatId()).address();
-        if (currentAddress.length() != 0) {
+        String currentAddress = addressesCache.getAddress(message.getChatId()).getTown();
+        if (currentAddress.length() > 0) {
             bot.executeAsync("Твой текущий адрес: " + currentAddress, message);
         }
     }

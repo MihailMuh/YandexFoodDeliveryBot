@@ -1,6 +1,6 @@
 package com.mihalis.yandexbot.config;
 
-import com.mihalis.yandexbot.cache.AddressCache;
+import com.mihalis.yandexbot.cache.Address;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,9 +32,9 @@ class RedisConfiguration {
     }
 
     @Bean(name = "addressOperations")
-    public ValueOperations<Long, AddressCache.Address> getAddressOperations(@Qualifier("addressConnection")
-                                                                                  LettuceConnectionFactory addressesConnection) {
-        RedisTemplate<Long, AddressCache.Address> redisTemplate = new RedisTemplate<>();
+    public ValueOperations<Long, Address> getAddressOperations(@Qualifier("addressConnection")
+                                                               LettuceConnectionFactory addressesConnection) {
+        RedisTemplate<Long, Address> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(addressesConnection);
         redisTemplate.afterPropertiesSet();
 

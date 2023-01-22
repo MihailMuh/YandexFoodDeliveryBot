@@ -47,6 +47,14 @@ public class Bot extends TelegramLongPollingCommandBot {
         executeAsync(postMessage);
     }
 
+    @SneakyThrows
+    public void execute(String text, Message message) {
+        PostMessage postMessage = new PostMessage(message);
+        postMessage.setText(text);
+
+        execute(postMessage);
+    }
+
     @Override
     public void processNonCommandUpdate(Update update) {
         if (update.hasCallbackQuery()) {
