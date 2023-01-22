@@ -47,7 +47,7 @@ class RandomTextHandlerTests {
         message.setText(userInput);
         randomTextHandler.handleUpdate(bot, message);
 
-        Mockito.verify(bot).executeAsync("🤦", message);
+        Mockito.verify(bot, times(1)).executeAsync("🤦", message);
     }
 
     private static Stream<String> differentStrings() {

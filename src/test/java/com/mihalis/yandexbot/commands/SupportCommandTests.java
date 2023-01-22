@@ -30,7 +30,7 @@ class SupportCommandTests {
     @Test
     @SneakyThrows
     void shouldAnswer() {
-        Mockito.when(bot.executeAsync(any(PostMessage.class))).thenReturn(any(CompletableFuture.class));
+        Mockito.when(bot.executeAsync(any(PostMessage.class))).thenReturn(new CompletableFuture<>());
 
         supportCommand.answer(bot, message);
 

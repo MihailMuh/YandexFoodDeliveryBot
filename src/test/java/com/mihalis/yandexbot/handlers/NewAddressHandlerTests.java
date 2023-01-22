@@ -2,7 +2,6 @@ package com.mihalis.yandexbot.handlers;
 
 import com.mihalis.yandexbot.beans.Telegram;
 import com.mihalis.yandexbot.cache.SelectNewAddressCache;
-import com.mihalis.yandexbot.handlers.NewAddressHandler;
 import com.mihalis.yandexbot.telegram.Bot;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -7,7 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 public class StartCommand extends BaseCommand {
-    public static final String greeting = "Привет!\n" +
+    private static final String greeting = "Привет!\n" +
             "Это бот, который уведомляет о изменении стоимости доставки " +
             "от магазина Яндекс Лавка (https://lavka.yandex.ru/54) " +
             "в сервисе Яндекс Еда (https://eda.yandex.ru/)\n" +
