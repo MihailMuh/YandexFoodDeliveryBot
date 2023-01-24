@@ -1,5 +1,6 @@
 package com.mihalis.yandexbot.commands;
 
+import com.mihalis.yandexbot.cache.Address;
 import com.mihalis.yandexbot.cache.AddressCache;
 import com.mihalis.yandexbot.cache.SelectNewAddressCache;
 import com.mihalis.yandexbot.telegram.Bot;
@@ -22,7 +23,9 @@ public class AddressCommand extends BaseCommand {
                     "Например:\n" +
                     "Екатеринбург, улица Малышева, 53А\n\n" +
                     "Вводи адрес, соблюдая этот формат! Если в течение 5 попыток я не найду этот адрес в " +
-                    "яндекс картах, будешь вводить по-новой";
+                    "яндекс картах, будешь вводить по-новой\n\n" +
+                    "Я буду писать тебе стоимость доставки по указанному адресу каждые 15 минут. " +
+                    "Когда надоест, вызови /stop";
 
     public AddressCommand(AddressCache addressCache, InlineKeyboardMarkup cancelKeyboard,
                           SelectNewAddressCache selectNewAddressCache) {
@@ -47,9 +50,9 @@ public class AddressCommand extends BaseCommand {
     }
 
     private void sendCurrentAddress(Bot bot, Message message) {
-        String currentAddress = addressesCache.getAddress(message.getChatId()).getTown();
-        if (currentAddress.length() > 0) {
-            bot.executeAsync("Твой текущий адрес: " + currentAddress, message);
+        Address address = addressesCache.getAddress(message.getChatId());
+        if (address.getTown().length() > 0) {
+            bot.executeAsync("Твой текущий адрес: " + address.getOriginalAddress(), message);
         }
     }
 }

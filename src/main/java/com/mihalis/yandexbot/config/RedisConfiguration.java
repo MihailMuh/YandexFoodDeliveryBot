@@ -11,6 +11,7 @@ import org.springframework.data.redis.connection.RedisSocketConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
 @Configuration
 class RedisConfiguration {
@@ -32,20 +33,22 @@ class RedisConfiguration {
     }
 
     @Bean(name = "addressOperations")
-    public ValueOperations<Long, Address> getAddressOperations(@Qualifier("addressConnection")
-                                                               LettuceConnectionFactory addressesConnection) {
-        RedisTemplate<Long, Address> redisTemplate = new RedisTemplate<>();
+    public ValueOperations<String, Address> getAddressOperations(@Qualifier("addressConnection")
+                                                                 LettuceConnectionFactory addressesConnection) {
+        RedisTemplate<String, Address> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(addressesConnection);
+        redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
         redisTemplate.afterPropertiesSet();
 
         return redisTemplate.opsForValue();
     }
 
     @Bean(name = "newAddressOperation")
-    public ValueOperations<Long, Boolean> getNewAddressOperation(@Qualifier("newAddressConnection")
-                                                                 LettuceConnectionFactory newAddressConnection) {
-        RedisTemplate<Long, Boolean> redisTemplate = new RedisTemplate<>();
+    public ValueOperations<String, Boolean> getNewAddressOperation(@Qualifier("newAddressConnection")
+                                                                   LettuceConnectionFactory newAddressConnection) {
+        RedisTemplate<String, Boolean> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(newAddressConnection);
+        redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
         redisTemplate.afterPropertiesSet();
 
         return redisTemplate.opsForValue();

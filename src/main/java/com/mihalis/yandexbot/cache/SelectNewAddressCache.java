@@ -9,13 +9,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class SelectNewAddressCache {
     @Setter(value = AccessLevel.PRIVATE, onMethod_ = {@Autowired})
-    private ValueOperations<Long, Boolean> newAddressOperation;
+    private ValueOperations<String, Boolean> newAddressOperation;
 
     public void setActivatedNewAddressOperation(long userId, boolean activated) {
-        newAddressOperation.set(userId, activated);
+        newAddressOperation.set(String.valueOf(userId), activated);
     }
 
     public boolean isActiveNewAddressOperation(long userId) {
-        return Boolean.TRUE.equals(newAddressOperation.get(userId));
+        return Boolean.TRUE.equals(newAddressOperation.get(String.valueOf(userId)));
     }
 }

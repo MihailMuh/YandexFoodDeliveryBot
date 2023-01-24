@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 @Component
 public class StartCommand extends BaseCommand {
     private static final String greeting = "Привет!\n" +
-            "Это бот, который уведомляет о изменении стоимости доставки " +
+            "Это бот, который уведомляет о текущей стоимости доставки " +
             "от магазина Яндекс Лавка (https://lavka.yandex.ru/54) " +
             "в сервисе Яндекс Еда (https://eda.yandex.ru/)\n" +
             "(т.к. только в Яндекс Лавке может быть бесплатная доставка, " +
@@ -16,8 +16,9 @@ public class StartCommand extends BaseCommand {
 
             "Список доступных команд:\n" +
             "/start - показать это приветственное сообщение\n" +
-            "/address - задать адрес доставки\n" +
-            "/support - поддержать автора :)\n";
+            "/address - задать адрес доставки и получить текущую её стоимость\n" +
+            "/stop - отменить автоматическое оповещение о текущей цене доставки (каждые 15 минут)\n" +
+            "/support - поддержать автора :)";
 
     public StartCommand() {
         super("start");

@@ -3,7 +3,7 @@ package com.mihalis.yandexbot.handlers;
 import com.mihalis.yandexbot.cache.Address;
 import com.mihalis.yandexbot.cache.AddressCache;
 import com.mihalis.yandexbot.cache.SelectNewAddressCache;
-import com.mihalis.yandexbot.selenium.YandexFood;
+import com.mihalis.yandexbot.selenium.YandexFoodService;
 import com.mihalis.yandexbot.selenium.exceptions.AttemptException;
 import com.mihalis.yandexbot.selenium.exceptions.NoDeliveryException;
 import com.mihalis.yandexbot.telegram.Bot;
@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import java.util.concurrent.ExecutorService;
+
 @Component
 @AllArgsConstructor
 public class NewAddressHandler {
@@ -21,7 +23,9 @@ public class NewAddressHandler {
 
     private final AddressCache addressCache;
 
-    private final YandexFood yandexFood;
+    private final YandexFoodService yandexFoodService;
+
+    private final ExecutorService executorService;
 
     public boolean handleUpdate(Bot bot, Message message) {
         // sent random message
@@ -34,24 +38,28 @@ public class NewAddressHandler {
                 !StringUtils.containsDigits(newAddress) ||
                 newAddress.charAt(0) == ',' || newAddress.charAt(newAddress.length() - 1) == ',' ||
                 newAddress.contains(",,")) {
+
             bot.executeAsync("Неверный формат адреса!", message);
             return true;
         }
 
         bot.executeAsync("Смотрю стоимость доставки... Это займет около 15 секунд", message);
 
-        new Thread(() -> processBrowser(bot, message, Address.of(newAddress))).start();
+        executorService.execute(() -> processBrowser(bot, message, Address.of(newAddress)));
         return true;
     }
 
     @SneakyThrows
     private void processBrowser(Bot bot, Message message, Address newAddress) {
         try {
-            String cost = yandexFood.getDeliveryCost(newAddress, message.getChatId());
+            long id = message.getChatId();
+
+            yandexFoodService.setNewAddress(id, newAddress);
+            String cost = yandexFoodService.getDeliveryCost(id);
             bot.executeAsync(cost, message);
 
-            selectNewAddressCache.setActivatedNewAddressOperation(message.getChatId(), false);
-            addressCache.setAddress(message.getChatId(), newAddress);
+            selectNewAddressCache.setActivatedNewAddressOperation(id, false);
+            addressCache.setAddress(id, newAddress);
             return;
         } catch (NoDeliveryException noDeliveryException) {
             bot.execute(getPhoto("Кажется, по этому адресу нет доставки", message));
@@ -67,7 +75,9 @@ public class NewAddressHandler {
     }
 
     private SendPhoto getPhoto(String text, Message message) {
-        SendPhoto sendPhoto = new SendPhoto(message.getChatId().toString(), yandexFood.getScreenshot());
+        long id = message.getChatId();
+
+        SendPhoto sendPhoto = new SendPhoto(String.valueOf(id), yandexFoodService.takeScreenshot(id));
         sendPhoto.setCaption(text);
 
         return sendPhoto;

@@ -3,44 +3,41 @@ package com.mihalis.yandexbot.selenium;
 import com.mihalis.yandexbot.cache.Address;
 import com.mihalis.yandexbot.selenium.exceptions.AttemptException;
 import com.mihalis.yandexbot.selenium.exceptions.NoDeliveryException;
-import lombok.RequiredArgsConstructor;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.SneakyThrows;
-import lombok.extern.log4j.Log4j2;
 import lombok.val;
-import org.openqa.selenium.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
-
-import java.time.Duration;
 
 import static org.openqa.selenium.By.cssSelector;
 import static org.openqa.selenium.Keys.DOWN;
 import static org.openqa.selenium.Keys.ENTER;
-import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
-import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
+import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
-@Log4j2
-@Component
-@RequiredArgsConstructor
-class DeliveryAddressPage {
-    private final WebDriver webDriver;
+class BrowserPage extends Page {
+    @Getter(AccessLevel.PACKAGE)
+    private final Address userAddress;
 
-    private Address userAddress;
-    private long userId;
+    private final Logger log;
 
     @FindBy(css = "div[class^='shown']")
     private WebElement setAddressButton;
 
-    void init(Address userAddress, long userId) {
+    private boolean young = true;
+
+    BrowserPage(String userId, Address userAddress) {
+        super("https://15min.market.yandex.ru/54");
         this.userAddress = userAddress;
-        this.userId = userId;
 
-        webDriver.get("https://15min.market.yandex.ru/54");
+        log = LogManager.getLogger(userId);
+        log.info("Browser created!");
 
-        PageFactory.initElements(webDriver, this);
+        PageFactory.initElements(browser, this);
     }
 
     void clickSetAddressBtn() {
@@ -60,7 +57,7 @@ class DeliveryAddressPage {
 
     @SneakyThrows
     void inputNewAddress() {
-        WebElement inputField = webDriver.findElement(cssSelector("input[class='i164506l']"));
+        WebElement inputField = browser.findElement(cssSelector("input[class='i164506l']"));
         inputField.sendKeys(userAddress.getOriginalAddress());
 
         WebElement listBox = Wait().until(visibilityOfElementLocated(cssSelector("ul[class='l1xltboq']")));
@@ -76,6 +73,8 @@ class DeliveryAddressPage {
             }
 
             if (containsRightAddress(listBox.getText().toLowerCase())) {
+                Thread.sleep(500);
+
                 inputField.sendKeys(DOWN);
                 inputField.sendKeys(ENTER);
 
@@ -84,8 +83,10 @@ class DeliveryAddressPage {
             }
 
             log.info(i + " attempt");
-            Thread.sleep(300);
             inputField.sendKeys(" "); // this move refreshes list box (ha, yandex logic)
+
+            Thread.sleep(500);
+            Wait().until(elementToBeClickable(cssSelector("ymaps[class='ymaps-2-1-79-map']")));
         }
 
         throw new AttemptException();
@@ -99,11 +100,18 @@ class DeliveryAddressPage {
 
             log.info("New address confirmed");
         } catch (Exception exception) {
+            exception.printStackTrace();
             throw new NoDeliveryException();
         }
     }
 
     String getDeliveryCost() {
+        if (!young) {
+            refresh();
+            log.info("refresh");
+            young = false;
+        }
+
         By okButtonScc = cssSelector("div[class='t1vrfrqt t18stym3 bw441np r88klks r1dbrdpx n10d4det l14lhr1r']");
         WebElement deliveryCost = Wait().until(elementToBeClickable(okButtonScc));
 
@@ -122,13 +130,5 @@ class DeliveryAddressPage {
         return streetHouse[0].contains(userAddress.getStreet()) &&
                 streetHouse[1].contains(userAddress.getHouse()) &&
                 town.contains(userAddress.getTown());
-    }
-
-    InputFile screenshot() {
-        return new InputFile(((TakesScreenshot) webDriver).getScreenshotAs(OutputType.FILE));
-    }
-
-    private WebDriverWait Wait() {
-        return new WebDriverWait(webDriver, Duration.ofSeconds(10));
     }
 }
