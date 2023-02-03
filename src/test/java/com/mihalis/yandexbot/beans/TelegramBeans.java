@@ -12,11 +12,12 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.util.Random;
 
 import static java.lang.Math.abs;
+import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 @Configuration
-public class Telegram {
+public class TelegramBeans {
     @Bean
-    @Scope(scopeName = "prototype")
+    @Scope(SCOPE_PROTOTYPE)
     public Message getMessage() {
         Chat chat = new Chat();
         chat.setId(abs(new Random().nextLong()));
@@ -28,7 +29,7 @@ public class Telegram {
     }
 
     @Bean
-    @Scope(scopeName = "prototype")
+    @Scope(SCOPE_PROTOTYPE)
     public CallbackQuery getCallback(@Autowired Message message) {
         CallbackQuery callbackQuery = new CallbackQuery();
         callbackQuery.setMessage(message);
@@ -37,7 +38,7 @@ public class Telegram {
     }
 
     @Bean
-    @Scope(scopeName = "prototype")
+    @Scope(SCOPE_PROTOTYPE)
     public PostMessage getPostMessage(@Autowired Message message) {
         return new PostMessage(message);
     }
