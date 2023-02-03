@@ -1,6 +1,6 @@
 package com.mihalis.yandexbot.config;
 
-import com.mihalis.yandexbot.cache.Address;
+import com.mihalis.yandexbot.model.Address;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,37 +18,34 @@ class RedisConfiguration {
     @Primary
     @Bean(name = "addressConnection")
     public LettuceConnectionFactory getAddressConnection(
-            @Value("${spring.data.redis.socket}") String unixSocketPath,
-            @Value("${spring.data.redis.database.old-address}") int database) {
+            @Value("${spring.data.redis.socket}") String unixSocketPath, @Value("${spring.data.redis.database.old-address}") int database) {
 
         return getConnection(unixSocketPath, database);
     }
 
-    @Bean(name = "newAddressConnection")
-    public LettuceConnectionFactory getNewAddressConnection(
-            @Value("${spring.data.redis.socket}") String unixSocketPath,
-            @Value("${spring.data.redis.database.new-address}") int database) {
+    @Bean(name = "addressStateConnection")
+    public LettuceConnectionFactory getAddressStateConnection(
+            @Value("${spring.data.redis.socket}") String unixSocketPath, @Value("${spring.data.redis.database.new-address}") int database) {
 
         return getConnection(unixSocketPath, database);
     }
 
-    @Bean(name = "addressOperations")
-    public ValueOperations<String, Address> getAddressOperations(@Qualifier("addressConnection")
-                                                                 LettuceConnectionFactory addressesConnection) {
+    @Bean(name = "addressStorage")
+    public ValueOperations<String, Address> getAddressStorage(@Qualifier("addressConnection")
+                                                                 LettuceConnectionFactory addressConnection) {
         RedisTemplate<String, Address> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(addressesConnection);
+        redisTemplate.setConnectionFactory(addressConnection);
         redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
         redisTemplate.afterPropertiesSet();
 
         return redisTemplate.opsForValue();
     }
 
-    @Bean(name = "newAddressOperation")
-    public ValueOperations<String, Boolean> getNewAddressOperation(@Qualifier("newAddressConnection")
+    @Bean(name = "addressStateStorage")
+    public ValueOperations<Long, Boolean> getAddressStateStorage(@Qualifier("addressStateConnection")
                                                                    LettuceConnectionFactory newAddressConnection) {
-        RedisTemplate<String, Boolean> redisTemplate = new RedisTemplate<>();
+        RedisTemplate<Long, Boolean> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(newAddressConnection);
-        redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
         redisTemplate.afterPropertiesSet();
 
         return redisTemplate.opsForValue();

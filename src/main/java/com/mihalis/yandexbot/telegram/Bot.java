@@ -7,10 +7,11 @@ import com.mihalis.yandexbot.commands.SupportCommand;
 import com.mihalis.yandexbot.handlers.CancelButtonHandler;
 import com.mihalis.yandexbot.handlers.NewAddressHandler;
 import com.mihalis.yandexbot.handlers.RandomTextHandler;
-import com.mihalis.yandexbot.selenium.YandexFoodService;
+import com.mihalis.yandexbot.service.YandexFoodService;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
@@ -23,17 +24,18 @@ import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
 @Component
+@AutoConfigureAfter(YandexFoodService.class)
 public class Bot extends TelegramLongPollingCommandBot {
     private final CancelButtonHandler cancelButtonHandler;
     private final NewAddressHandler newAddressHandler;
     private final RandomTextHandler randomTextHandler;
 
     @Getter
-    @Value("${spring.telegram.bot.username}")
+    @Value("${telegram.bot.username}")
     private String botUsername;
 
     @Getter
-    @Value("${spring.telegram.bot.token}")
+    @Value("${telegram.bot.token}")
     private String botToken;
 
     public Bot(DefaultBotOptions defaultBotOptions, CancelButtonHandler cancelButtonHandler,
@@ -89,8 +91,8 @@ public class Bot extends TelegramLongPollingCommandBot {
     private void registerUsersForNotification(YandexFoodService yandexFoodService) {
         yandexFoodService.runScheduledCheckOfCost(deliveryData -> {
             SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(deliveryData.userId());
-            sendMessage.setText(deliveryData.address() + "\n" + deliveryData.cost());
+            sendMessage.setChatId(deliveryData.getUserId());
+            sendMessage.setText(deliveryData.getAddress() + "\n" + deliveryData.getDeliveryCost());
 
             executeAsync(sendMessage);
         });

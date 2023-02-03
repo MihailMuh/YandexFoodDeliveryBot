@@ -14,10 +14,10 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 
-@SpringBootTest(classes = {Telegram.class, SelectNewAddressCache.class})
-public class SelectNewAddressCacheTests {
+@SpringBootTest(classes = {Telegram.class, AddressState.class})
+public class AddressStateTests {
     @Autowired
-    private SelectNewAddressCache selectNewAddressCache;
+    private AddressState addressState;
 
     @MockBean
     private ValueOperations<Long, Boolean> newAddressOperation;
@@ -27,7 +27,7 @@ public class SelectNewAddressCacheTests {
     void shouldActivateOperationInCache(boolean value) {
         Mockito.doNothing().when(newAddressOperation).set(anyLong(), anyBoolean());
 
-        selectNewAddressCache.setActivatedNewAddressOperation(1234567890L, value);
+        addressState.setActive(1234567890L, value);
 
         Mockito.verify(newAddressOperation, times(1)).set(1234567890L, value);
     }
@@ -36,7 +36,7 @@ public class SelectNewAddressCacheTests {
     void shouldGetStateOfOperationFromCache() {
         Mockito.when(newAddressOperation.get(anyLong())).thenReturn(anyBoolean());
 
-        selectNewAddressCache.isActiveNewAddressOperation(1234567890L);
+        addressState.isActive(1234567890L);
 
         Mockito.verify(newAddressOperation, times(1)).get(1234567890L);
     }

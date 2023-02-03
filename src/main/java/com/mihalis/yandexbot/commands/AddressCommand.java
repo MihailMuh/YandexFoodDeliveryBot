@@ -1,8 +1,8 @@
 package com.mihalis.yandexbot.commands;
 
-import com.mihalis.yandexbot.cache.Address;
-import com.mihalis.yandexbot.cache.AddressCache;
-import com.mihalis.yandexbot.cache.SelectNewAddressCache;
+import com.mihalis.yandexbot.model.Address;
+import com.mihalis.yandexbot.repository.AddressRepository;
+import com.mihalis.yandexbot.cache.AddressState;
 import com.mihalis.yandexbot.telegram.Bot;
 import com.mihalis.yandexbot.telegram.PostMessage;
 import lombok.SneakyThrows;
@@ -12,8 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 
 @Component
 public class AddressCommand extends BaseCommand {
-    private final AddressCache addressesCache;
-    private final SelectNewAddressCache selectNewAddressCache;
+    private final AddressRepository addressesCache;
+    private final AddressState addressState;
 
     private final InlineKeyboardMarkup cancelKeyboard;
 
@@ -27,11 +27,11 @@ public class AddressCommand extends BaseCommand {
                     "Я буду писать тебе стоимость доставки по указанному адресу каждые 15 минут. " +
                     "Когда надоест, вызови /stop";
 
-    public AddressCommand(AddressCache addressCache, InlineKeyboardMarkup cancelKeyboard,
-                          SelectNewAddressCache selectNewAddressCache) {
+    public AddressCommand(AddressRepository addressRepository, InlineKeyboardMarkup cancelKeyboard,
+                          AddressState addressState) {
         super("address");
-        this.addressesCache = addressCache;
-        this.selectNewAddressCache = selectNewAddressCache;
+        this.addressesCache = addressRepository;
+        this.addressState = addressState;
         this.cancelKeyboard = cancelKeyboard;
     }
 
@@ -46,12 +46,12 @@ public class AddressCommand extends BaseCommand {
 
         bot.executeAsync(sendMessage);
 
-        selectNewAddressCache.setActivatedNewAddressOperation(message.getChatId(), true);
+        addressState.setActive(message.getChatId(), true);
     }
 
     private void sendCurrentAddress(Bot bot, Message message) {
         Address address = addressesCache.getAddress(message.getChatId());
-        if (address.getTown().length() > 0) {
+        if (address.notEmpty()) {
             bot.executeAsync("Твой текущий адрес: " + address.getOriginalAddress(), message);
         }
     }

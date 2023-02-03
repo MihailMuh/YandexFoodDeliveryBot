@@ -23,7 +23,13 @@ public class Timer {
         if (future != null) {
             future.cancel(true);
         }
-        future = timer.scheduleWithFixedDelay(runnable, 15, 15, MINUTES);
+        future = timer.scheduleWithFixedDelay(() -> {
+            try {
+                runnable.run();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 15, 15, MINUTES);
     }
 
     @PreDestroy

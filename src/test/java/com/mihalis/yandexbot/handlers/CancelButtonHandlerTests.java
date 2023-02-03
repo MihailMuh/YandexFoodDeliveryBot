@@ -1,7 +1,7 @@
 package com.mihalis.yandexbot.handlers;
 
 import com.mihalis.yandexbot.beans.Telegram;
-import com.mihalis.yandexbot.cache.SelectNewAddressCache;
+import com.mihalis.yandexbot.cache.AddressState;
 import com.mihalis.yandexbot.telegram.Bot;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,7 +28,7 @@ public class CancelButtonHandlerTests {
     private Bot bot;
 
     @MockBean
-    private SelectNewAddressCache addressCache;
+    private AddressState addressCache;
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -47,7 +47,7 @@ public class CancelButtonHandlerTests {
     @Test
     void shouldAnswer_whenCorrectInput() {
         Mockito.doNothing().when(bot).executeAsync(eq("Операция отменена"), any(Message.class));
-        Mockito.doNothing().when(addressCache).setActivatedNewAddressOperation(anyLong(), eq(false));
+        Mockito.doNothing().when(addressCache).setActive(anyLong(), eq(false));
 
         callback.setData("cancel");
 
@@ -55,6 +55,6 @@ public class CancelButtonHandlerTests {
 
         Mockito.verify(bot, times(1)).executeAsync("Операция отменена", callback.getMessage());
         Mockito.verify(addressCache, times(1)).
-                setActivatedNewAddressOperation(callback.getMessage().getChatId(), false);
+                setActive(callback.getMessage().getChatId(), false);
     }
 }

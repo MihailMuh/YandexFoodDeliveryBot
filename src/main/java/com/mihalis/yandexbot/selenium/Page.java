@@ -1,50 +1,47 @@
 package com.mihalis.yandexbot.selenium;
 
-import lombok.SneakyThrows;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.time.Duration;
 
-class Page {
+abstract class Page {
+    private final String url;
+
     protected final WebDriver browser;
 
-    protected Page(String url) {
-        browser = generateBrowser();
-        browser.get(url);
+    public Page(String url, WebDriver browser) {
+        this.url = url;
+        this.browser = browser;
+
+        reset();
     }
 
-    void refresh() {
-        browser.navigate().refresh();
-    }
-
-    InputFile screenshot() {
+    public InputFile screenshot() {
         return new InputFile(((TakesScreenshot) browser).getScreenshotAs(OutputType.FILE));
     }
 
-    void close() {
+    public void close() {
         try {
-            browser.close();
+            browser.quit();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    protected final WebDriverWait Wait() {
-        return new WebDriverWait(browser, Duration.ofSeconds(10));
+    void reset() {
+        browser.manage().deleteAllCookies();
+        browser.get(url);
     }
 
-    @SneakyThrows
-    private WebDriver generateBrowser() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("start-maximized", "--no-sandbox", "--disable-dev-shm-usage");
-        options.setHeadless(true);
+    protected final WebDriverWait Wait() {
+        return Wait(15);
+    }
 
-        return new ChromeDriver(options);
+    protected WebDriverWait Wait(int seconds) {
+        return new WebDriverWait(browser, Duration.ofSeconds(seconds));
     }
 }

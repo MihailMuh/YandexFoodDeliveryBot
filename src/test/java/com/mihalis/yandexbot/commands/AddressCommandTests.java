@@ -1,8 +1,8 @@
 package com.mihalis.yandexbot.commands;
 
 import com.mihalis.yandexbot.beans.Telegram;
-import com.mihalis.yandexbot.cache.AddressCache;
-import com.mihalis.yandexbot.cache.SelectNewAddressCache;
+import com.mihalis.yandexbot.repository.AddressRepository;
+import com.mihalis.yandexbot.cache.AddressState;
 import com.mihalis.yandexbot.telegram.Bot;
 import com.mihalis.yandexbot.telegram.PostMessage;
 import lombok.SneakyThrows;
@@ -29,17 +29,17 @@ public class AddressCommandTests {
     private Message message;
 
     @MockBean
-    private AddressCache addressesCache;
+    private AddressRepository addressesCache;
 
     @MockBean
-    private SelectNewAddressCache selectNewAddressCache;
+    private AddressState addressState;
 
     @MockBean
     private Bot bot;
 
     @Test
     void shouldSendUserAddress_whenItExists() {
-        Mockito.when(addressesCache.getAddress(anyLong())).thenReturn(new AddressCache.Address("Hello", "World!"));
+        Mockito.when(addressesCache.getAddress(anyLong())).thenReturn(new AddressRepository.Address("Hello", "World!"));
         Mockito.doNothing().when(bot).executeAsync(eq("Твой текущий адрес: Hello"), any(Message.class));
 
         startCommand.answer(bot, message);
@@ -50,7 +50,7 @@ public class AddressCommandTests {
 
     @Test
     void shouldNotSendUserAddress_whenItNotExists() {
-        Mockito.when(addressesCache.getAddress(anyLong())).thenReturn(new AddressCache.Address("", ""));
+        Mockito.when(addressesCache.getAddress(anyLong())).thenReturn(new AddressRepository.Address("", ""));
 
         startCommand.answer(bot, message);
 
@@ -61,15 +61,15 @@ public class AddressCommandTests {
     @Test
     @SneakyThrows
     void shouldAnswer() {
-        Mockito.when(addressesCache.getAddress(anyLong())).thenReturn(new AddressCache.Address("", ""));
+        Mockito.when(addressesCache.getAddress(anyLong())).thenReturn(new AddressRepository.Address("", ""));
         Mockito.when(bot.executeAsync(any(PostMessage.class))).thenReturn(new CompletableFuture<>());
-        Mockito.doNothing().when(selectNewAddressCache).setActivatedNewAddressOperation(anyLong(), eq(true));
+        Mockito.doNothing().when(addressState).setActive(anyLong(), eq(true));
 
         startCommand.answer(bot, message);
 
         Mockito.verify(addressesCache, times(1)).getAddress(message.getChatId());
         Mockito.verify(bot, times(1)).executeAsync(any(PostMessage.class));
-        Mockito.verify(selectNewAddressCache, times(1))
-                .setActivatedNewAddressOperation(message.getChatId(), true);
+        Mockito.verify(addressState, times(1))
+                .setActive(message.getChatId(), true);
     }
 }

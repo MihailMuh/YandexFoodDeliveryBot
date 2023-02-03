@@ -33,3 +33,4 @@ build/
 
 docker/
 src/main/resources/application.properties
+*.log
