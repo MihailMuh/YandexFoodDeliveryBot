@@ -52,7 +52,7 @@ public class AddressCommand extends BaseCommand {
     private void sendCurrentAddress(Bot bot, Message message) {
         Address address = addressesCache.getAddress(message.getChatId());
         if (address.notEmpty()) {
-            bot.executeAsync("Твой текущий адрес: " + address.getOriginalAddress(), message);
+            bot.execute("Твой текущий адрес: " + address.getOriginalAddress(), message);
         }
     }
 }

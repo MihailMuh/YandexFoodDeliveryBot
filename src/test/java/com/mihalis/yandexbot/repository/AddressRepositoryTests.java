@@ -1,9 +1,8 @@
-package com.mihalis.yandexbot.cache;
+package com.mihalis.yandexbot.repository;
 
 import com.mihalis.yandexbot.beans.AddressBeans;
 import com.mihalis.yandexbot.beans.TelegramBeans;
 import com.mihalis.yandexbot.model.Address;
-import com.mihalis.yandexbot.repository.AddressRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +28,7 @@ import java.util.stream.Stream;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 
-@SpringBootTest(classes = {TelegramBeans.class, AddressRepository.class, AddressBeans.class, RedisOperations.class})
+@SpringBootTest(classes = {TelegramBeans.class, AddressRepository.class, AddressBeans.class})
 public class AddressRepositoryTests {
     @Autowired
     private AddressRepository addressRepository;

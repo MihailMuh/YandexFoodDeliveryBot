@@ -34,6 +34,10 @@ public class YandexFoodService {
         pageRepository.deletePage(userId);
     }
 
+    public void cancelAddress(long userId) {
+        pageRepository.cancelPage(userId);
+    }
+
     public InputFile takeScreenshot(long userId) {
         return getBrowserPage(userId).screenshot();
     }

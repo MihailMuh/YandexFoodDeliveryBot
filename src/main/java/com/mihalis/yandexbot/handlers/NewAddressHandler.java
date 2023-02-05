@@ -76,6 +76,7 @@ public class NewAddressHandler {
 
         bot.executeAsync("Я мог в чем-то ошибиться. Чтобы повторить поиск, введи еще раз адрес\n" +
                 "Для отмены нажми кнопку ОТМЕНА в сообщении выше", message);
+        yandexFoodService.cancelAddress(id);
     }
 
     private SendPhoto createPhoto(String text, long userId) {

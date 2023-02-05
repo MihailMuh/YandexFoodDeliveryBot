@@ -5,6 +5,7 @@ import com.mihalis.yandexbot.model.DeliveryData;
 import com.mihalis.yandexbot.selenium.BrowserPage;
 import com.mihalis.yandexbot.selenium.PagePool;
 import jakarta.annotation.PreDestroy;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.data.util.Pair;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -25,27 +27,34 @@ public class PageRepository {
 
     private final PagePool pagePool;
 
+    @SneakyThrows
     public PageRepository(AddressRepository addressRepository, ExecutorService executorService, PagePool pagePool) {
         this.executorService = executorService;
         this.pagePool = pagePool;
 
         List<Pair<Long, Address>> addresses = addressRepository.items();
+        CountDownLatch countDownLatch = new CountDownLatch(addresses.size());
 
         log.info("Initializing " + addresses.size() + " web pages");
 
         for (Pair<Long, Address> pair : addresses) {
-            // here address is valid, but there's a chance, that function crashes
-            // if it happens - just repeat
-            while (true) {
-                try {
-                    createPage(pair.getFirst(), pair.getSecond());
-                    return;
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                    deletePage(pair.getFirst());
+            executorService.execute(() -> {
+                // here address is valid, but there's a chance, that function crashes
+                // if it happens - just repeat
+                while (true) {
+                    try {
+                        createPage(pair.getFirst(), pair.getSecond());
+                        countDownLatch.countDown();
+                        return;
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                        deletePage(pair.getFirst());
+                    }
                 }
-            }
+            });
         }
+
+        countDownLatch.await();
     }
 
     public void createPage(long userId, Address address) {
@@ -76,6 +85,10 @@ public class PageRepository {
 
             log.info("Old page deleted");
         }
+    }
+
+    public void cancelPage(long id) {
+        getPage(id).cancel();
     }
 
     public void iterateDeliveryCosts(Consumer<DeliveryData> costConsumer) {

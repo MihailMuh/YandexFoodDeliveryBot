@@ -1,5 +1,6 @@
 package com.mihalis.yandexbot.selenium;
 
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -9,15 +10,15 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import java.time.Duration;
 
 abstract class Page {
-    private final String url;
-
     protected final WebDriver browser;
 
-    public Page(String url, WebDriver browser) {
-        this.url = url;
-        this.browser = browser;
+    protected final JavascriptExecutor javaScript;
 
-        reset();
+    public Page(String url, WebDriver browser) {
+        this.browser = browser;
+        this.javaScript = (JavascriptExecutor) browser;
+
+        browser.get(url);
     }
 
     public InputFile screenshot() {
@@ -32,9 +33,16 @@ abstract class Page {
         }
     }
 
+    protected abstract void init();
+
+    protected void refreshPage() {
+        browser.navigate().refresh();
+    }
+
     void reset() {
         browser.manage().deleteAllCookies();
-        browser.get(url);
+        refreshPage();
+        init();
     }
 
     protected final WebDriverWait Wait() {

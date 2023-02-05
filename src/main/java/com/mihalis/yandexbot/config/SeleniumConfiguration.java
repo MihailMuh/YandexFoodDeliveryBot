@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.ExecutorService;
 
 @Configuration
-public class BrowserConfiguration {
+public class SeleniumConfiguration {
     @Value("${app.yandex.url}")
     private String yandexUrl;
 
@@ -37,7 +37,7 @@ public class BrowserConfiguration {
 
     private WebDriver createBrowser() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--start-maximized", "--no-sandbox", "--disable-dev-shm-usage");
+        options.addArguments("--start-maximized", "--disable-dev-shm-usage");
         options.setHeadless(headless);
 
         return new ChromeDriver(options);

@@ -32,9 +32,8 @@ public abstract class PagePool {
         countDownLatch.await();
     }
 
-
     public BrowserPage obtain(long userId, Address userAddress) {
-        if (queue.size() <= 2) {
+        if (queue.size() <= 1) {
             int length = 3 - queue.size();
             for (int i = 0; i < length; i++) {
                 executorService.execute(this::generatePage);
