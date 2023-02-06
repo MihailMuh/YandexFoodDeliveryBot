@@ -11,6 +11,7 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class BrowserPage extends Page {
     private Logger log;
 
     private WebElement yandexMaps, inputAddress;
+
+    private List<String> rawAddresses;
 
     private boolean young = true;
 
@@ -92,15 +95,7 @@ public class BrowserPage extends Page {
             Thread.sleep(500);
         }
 
-        WebElement listBox = Wait().until(presenceOfElementLocated(cssSelector("ul[class='l1xltboq']")));
-        if (addressesAreEquals(listBox.getText().toLowerCase())) {
-            inputAddress.sendKeys(DOWN);
-            inputAddress.sendKeys(ENTER);
-
-            log.info("New address entered");
-        } else {
-            throw new TooMuchAttemptsException();
-        }
+        log.info("New address entered");
     }
 
     public void applyNewAddress() {
@@ -128,6 +123,23 @@ public class BrowserPage extends Page {
 
         log.info("Delivery cost received");
         return deliveryCost.getText();
+    }
+
+    public List<String> getDeliveryAddresses() {
+        WebElement listBox = Wait().until(presenceOfElementLocated(cssSelector("ul[class='l1xltboq']")));
+        ArrayList<String> addresses = new ArrayList<>();
+        String[] rawAddresses = listBox.getText().split("\n");
+
+        for (int i = 0; i < rawAddresses.length - 1; i += 2) {
+            String street = rawAddresses[i];
+            String town = rawAddresses[i + 1];
+
+            addresses.add(town + ", " + street);
+        }
+
+        log.info("Delivery addresses collected");
+
+        return addresses;
     }
 
     public void cancel() {

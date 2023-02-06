@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.ExecutorService;
 
 @Configuration
-public class SeleniumConfiguration {
+class SeleniumConfiguration {
     @Value("${app.yandex.url}")
     private String yandexUrl;
 

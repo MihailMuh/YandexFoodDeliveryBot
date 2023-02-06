@@ -5,7 +5,7 @@ import com.mihalis.yandexbot.commands.StartCommand;
 import com.mihalis.yandexbot.commands.StopCommand;
 import com.mihalis.yandexbot.commands.SupportCommand;
 import com.mihalis.yandexbot.handlers.CancelButtonHandler;
-import com.mihalis.yandexbot.handlers.NewAddressHandler;
+import com.mihalis.yandexbot.handlers.ChooseDeliveryAddressHandler;
 import com.mihalis.yandexbot.handlers.RandomTextHandler;
 import com.mihalis.yandexbot.service.YandexFoodService;
 import lombok.Getter;
@@ -19,6 +19,7 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 @AutoConfigureAfter(YandexFoodService.class)
 public class Bot extends TelegramLongPollingCommandBot {
     private final CancelButtonHandler cancelButtonHandler;
-    private final NewAddressHandler newAddressHandler;
+    private final ChooseDeliveryAddressHandler chooseDeliveryAddressHandler;
     private final RandomTextHandler randomTextHandler;
 
     @Getter
@@ -39,30 +40,39 @@ public class Bot extends TelegramLongPollingCommandBot {
     private String botToken;
 
     public Bot(DefaultBotOptions defaultBotOptions, CancelButtonHandler cancelButtonHandler,
-               NewAddressHandler newAddressHandler, StartCommand startCommand, AddressCommand addressCommand,
+               ChooseDeliveryAddressHandler chooseDeliveryAddressHandler, StartCommand startCommand, AddressCommand addressCommand,
                SupportCommand supportCommand, StopCommand stopCommand, RandomTextHandler randomTextHandler,
                YandexFoodService yandexFoodService) {
 
         super(defaultBotOptions);
         this.cancelButtonHandler = cancelButtonHandler;
-        this.newAddressHandler = newAddressHandler;
+        this.chooseDeliveryAddressHandler = chooseDeliveryAddressHandler;
         this.randomTextHandler = randomTextHandler;
 
         registerAll(startCommand, addressCommand, supportCommand, stopCommand);
         registerUsersForNotification(yandexFoodService);
     }
 
+    // this just a method that wraps into @SneakyThrows
     @Override
     @SneakyThrows
     public <T extends Serializable, Method extends BotApiMethod<T>> CompletableFuture<T> executeAsync(Method method) {
         return super.executeAsync(method);
     }
 
-    public void executeAsync(String text, Message message) {
+    public void executeAsync(String text, Message message, InlineKeyboardMarkup keyboardMarkup) {
         PostMessage postMessage = new PostMessage(message);
         postMessage.setText(text);
 
+        if (keyboardMarkup != null) {
+            postMessage.setReplyMarkup(keyboardMarkup);
+        }
+
         executeAsync(postMessage);
+    }
+
+    public void executeAsync(String text, Message message) {
+        executeAsync(text, message, null);
     }
 
     @SneakyThrows
@@ -80,7 +90,7 @@ public class Bot extends TelegramLongPollingCommandBot {
         }
 
         if (update.hasMessage()) {
-            if (newAddressHandler.handleUpdate(this, update.getMessage())) {
+            if (chooseDeliveryAddressHandler.handleUpdate(this, update.getMessage())) {
                 return;
             }
 

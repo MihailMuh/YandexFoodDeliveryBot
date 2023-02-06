@@ -87,6 +87,10 @@ public class PageRepository {
         }
     }
 
+    public List<String> getDeliveryAddresses(long userId) {
+        return getPage(userId).getDeliveryAddresses();
+    }
+
     public void cancelPage(long id) {
         getPage(id).cancel();
     }

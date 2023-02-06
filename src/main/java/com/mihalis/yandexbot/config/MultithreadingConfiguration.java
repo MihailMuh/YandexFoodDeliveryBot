@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import static java.lang.Math.max;
 
 @Configuration
-public class MultithreadingConfiguration {
+class MultithreadingConfiguration {
     @Bean(name = "executorService", destroyMethod = "shutdown")
     public ExecutorService getExecutorService(@Value("${app.parallelism}") int parallelism) {
         return Executors.newWorkStealingPool(parallelism);
