@@ -1,12 +1,10 @@
-package com.mihalis.yandexbot.commands;
+package com.mihalis.yandexbot.command;
 
-import com.mihalis.yandexbot.telegram.Bot;
-import lombok.SneakyThrows;
+import com.mihalis.yandexbot.telegram.Parcel;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
-public class StartCommand extends BaseCommand {
+public class StartCommand extends Command {
     private static final String greeting = "Привет!\n" +
             "Это бот, который уведомляет о текущей стоимости доставки " +
             "от магазина Яндекс Лавка (https://lavka.yandex.ru/54) " +
@@ -25,8 +23,7 @@ public class StartCommand extends BaseCommand {
     }
 
     @Override
-    @SneakyThrows
-    public void answer(Bot bot, Message message) {
-        bot.executeAsync(greeting, message);
+    public void answer(Parcel parcel) {
+        parcel.answerAsync(greeting);
     }
 }

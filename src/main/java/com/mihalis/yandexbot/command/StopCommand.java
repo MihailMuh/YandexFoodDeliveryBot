@@ -1,13 +1,12 @@
-package com.mihalis.yandexbot.commands;
+package com.mihalis.yandexbot.command;
 
 import com.mihalis.yandexbot.repository.AddressRepository;
 import com.mihalis.yandexbot.service.YandexFoodService;
-import com.mihalis.yandexbot.telegram.Bot;
+import com.mihalis.yandexbot.telegram.Parcel;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
-public class StopCommand extends BaseCommand {
+public class StopCommand extends Command {
     private final YandexFoodService yandexFoodService;
 
     private final AddressRepository addressRepository;
@@ -19,10 +18,10 @@ public class StopCommand extends BaseCommand {
     }
 
     @Override
-    public void answer(Bot bot, Message message) {
-        yandexFoodService.deleteAddress(message.getChatId());
-        addressRepository.deleteAddress(message.getChatId());
+    public void answer(Parcel parcel) {
+        yandexFoodService.deleteAddress(parcel.getUserId());
+        addressRepository.deleteAddress(parcel.getUserId());
 
-        bot.executeAsync("Операция отменена", message);
+        parcel.answerAsync("Операция отменена");
     }
 }

@@ -1,4 +1,4 @@
-package com.mihalis.yandexbot.keyboards;
+package com.mihalis.yandexbot.keyboard;
 
 import lombok.val;
 import org.springframework.context.annotation.Bean;

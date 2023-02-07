@@ -1,17 +1,14 @@
-package com.mihalis.yandexbot.commands;
+package com.mihalis.yandexbot.command;
 
+import com.mihalis.yandexbot.cache.AddressState;
 import com.mihalis.yandexbot.model.Address;
 import com.mihalis.yandexbot.repository.AddressRepository;
-import com.mihalis.yandexbot.cache.AddressState;
-import com.mihalis.yandexbot.telegram.Bot;
-import com.mihalis.yandexbot.telegram.PostMessage;
-import lombok.SneakyThrows;
+import com.mihalis.yandexbot.telegram.Parcel;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 @Component
-public class AddressCommand extends BaseCommand {
+public class AddressCommand extends Command {
     private final AddressRepository addressesCache;
     private final AddressState addressState;
 
@@ -36,23 +33,17 @@ public class AddressCommand extends BaseCommand {
     }
 
     @Override
-    @SneakyThrows
-    public void answer(Bot bot, Message message) {
-        sendCurrentAddress(bot, message);
+    public void answer(Parcel parcel) {
+        sendCurrentAddress(parcel);
+        parcel.answerAsync(conditionMessage, cancelKeyboard);
 
-        PostMessage sendMessage = new PostMessage(message);
-        sendMessage.setText(conditionMessage);
-        sendMessage.setReplyMarkup(cancelKeyboard);
-
-        bot.executeAsync(sendMessage);
-
-        addressState.setActive(message.getChatId(), true);
+        addressState.setActive(parcel.getUserId(), true);
     }
 
-    private void sendCurrentAddress(Bot bot, Message message) {
-        Address address = addressesCache.getAddress(message.getChatId());
+    private void sendCurrentAddress(Parcel parcel) {
+        Address address = addressesCache.getAddress(parcel.getUserId());
         if (address.notEmpty()) {
-            bot.execute("Твой текущий адрес: " + address.getOriginalAddress(), message);
+            parcel.answer("Твой текущий адрес: " + address.getOriginalAddress());
         }
     }
 }
