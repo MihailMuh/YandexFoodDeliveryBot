@@ -2,7 +2,6 @@ package com.mihalis.yandexbot.selenium;
 
 import com.mihalis.yandexbot.model.Address;
 import com.mihalis.yandexbot.selenium.exceptions.NoDeliveryException;
-import com.mihalis.yandexbot.selenium.exceptions.TooMuchAttemptsException;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.openqa.selenium.By;
@@ -11,10 +10,9 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static org.openqa.selenium.By.cssSelector;
 import static org.openqa.selenium.Keys.*;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
@@ -78,29 +76,14 @@ public class BrowserPage extends Page {
 
     @SneakyThrows
     public void inputNewAddress() {
-        log.error(userAddress.toString());
-        inputWholeAddress(inputAddress, asList(userAddress.getTown(), userAddress.getStreet(), userAddress.getHouse()));
-        waitForYmaps();
-
-        while (true) {
-            boolean listBoxVisible = (boolean) javaScript.executeScript(
-                    "return document.getElementsByClassName('l1xltboq').length > 0;"
-            );
-            if (listBoxVisible) break;
-
-            inputAddress.sendKeys(SPACE);
-            Thread.sleep(500);
+        String address = userAddress.getOriginalAddress() + "  ";
+        for (int i = 0; i < address.length(); i++) {
+            inputAddress.sendKeys(address.substring(i, i + 1)); // one symbol
+            Thread.sleep(200);
+            Wait().until(elementToBeClickable(yandexMaps));
         }
 
-        WebElement listBox = Wait().until(presenceOfElementLocated(cssSelector("ul[class='l1xltboq']")));
-        if (addressesAreEquals(listBox.getText().toLowerCase())) {
-            inputAddress.sendKeys(DOWN);
-            inputAddress.sendKeys(ENTER);
-
-            log.info("New address entered");
-        } else {
-            throw new TooMuchAttemptsException();
-        }
+        log.info("New address entered");
     }
 
     public void applyNewAddress() {
@@ -130,6 +113,30 @@ public class BrowserPage extends Page {
         return deliveryCost.getText();
     }
 
+    @SneakyThrows
+    public List<String> getDeliveryAddresses() {
+        waitForListBox();
+        WebElement listBox = browser.findElement(cssSelector("ul[class='l1xltboq']"));
+        Thread.sleep(1000);
+
+        String[] rawAddresses = listBox.getText().split("\n");
+        ArrayList<String> addresses = new ArrayList<>();
+
+        for (int i = 0; i < rawAddresses.length - 1; i += 2) {
+            String street = rawAddresses[i];
+
+            // something like this: Екатеринбург, Свердловская область
+            String townAndState = rawAddresses[i + 1];
+            String town = townAndState.split(", ")[0];
+
+            addresses.add(town + ", " + street);
+        }
+
+        log.info("Delivery addresses collected");
+
+        return addresses;
+    }
+
     public void cancel() {
         Wait().until(elementToBeClickable(cssSelector("button[class='c1vwcsci']"))).click();
 
@@ -137,27 +144,30 @@ public class BrowserPage extends Page {
     }
 
     @SneakyThrows
-    private void inputWholeAddress(WebElement inputAddress, List<String> addresses) {
+    private void inputWholeAddress(List<String> addresses) {
         for (String address : addresses) {
             inputAddress.sendKeys(address);
             inputAddress.sendKeys(SPACE);
 
-            waitForYmaps();
+            waitForListBox();
         }
     }
 
     @SneakyThrows
-    private void waitForYmaps() {
-        Wait().until(elementToBeClickable(yandexMaps));
-        Thread.sleep(700);
-    }
+    private void waitForListBox() {
+        while (true) {
+            Wait().until(elementToBeClickable(yandexMaps));
 
-    private boolean addressesAreEquals(String text) {
-        String[] split = text.split("\n");
-        for (String l : split) {
-            log.info(l + "         1111");
+            boolean listBoxVisible = (boolean) javaScript.executeScript(
+                    "return document.getElementsByClassName('l1xltboq').length > 0;"
+            );
+            if (listBoxVisible) {
+                return;
+            }
+
+            inputAddress.sendKeys(SPACE);
+            Thread.sleep(500);
         }
-        return true;
     }
 
     private void removeUnnecessaryButton() {

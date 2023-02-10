@@ -62,7 +62,6 @@ public class PageRepository {
         pages.put(userId, page);
 
         page.inputNewAddress();
-        page.applyNewAddress();
     }
 
     public void updatePage(long userId, Address address) {
@@ -72,7 +71,6 @@ public class PageRepository {
         page.clickUpdateAddressButton();
         page.clearOldAddress();
         page.inputNewAddress();
-        page.applyNewAddress();
     }
 
     public BrowserPage getPage(long userId) {
@@ -85,6 +83,10 @@ public class PageRepository {
 
             log.info("Old page deleted");
         }
+    }
+
+    public List<String> getDeliveryAddresses(long userId) {
+        return getPage(userId).getDeliveryAddresses();
     }
 
     public void cancelPage(long id) {

@@ -7,22 +7,14 @@ import com.mihalis.yandexbot.telegram.Parcel;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
+import static com.mihalis.yandexbot.data.StringMessages.enterNewDeliveryAddress;
+
 @Component
 public class AddressCommand extends Command {
     private final AddressRepository addressesCache;
     private final AddressState addressState;
 
     private final InlineKeyboardMarkup cancelKeyboard;
-
-    private static final String conditionMessage =
-            "Новый адрес должен быть в формате:\n" +
-                    "Город, улица, дом\n\n" +
-                    "Например:\n" +
-                    "Екатеринбург, улица Малышева, 53А\n\n" +
-                    "Вводи адрес, соблюдая этот формат! Если в течение 5 попыток я не найду этот адрес в " +
-                    "яндекс картах, будешь вводить по-новой\n\n" +
-                    "Я буду писать тебе стоимость доставки по указанному адресу каждые 15 минут. " +
-                    "Когда надоест, вызови /stop";
 
     public AddressCommand(AddressRepository addressRepository, InlineKeyboardMarkup cancelKeyboard,
                           AddressState addressState) {
@@ -35,7 +27,7 @@ public class AddressCommand extends Command {
     @Override
     public void answer(Parcel parcel) {
         sendCurrentAddress(parcel);
-        parcel.answerAsync(conditionMessage, cancelKeyboard);
+        parcel.answerAsync(enterNewDeliveryAddress, cancelKeyboard);
 
         addressState.setActive(parcel.getUserId(), true);
     }

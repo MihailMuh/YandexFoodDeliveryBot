@@ -2,8 +2,6 @@ package com.mihalis.yandexbot;
 
 import com.mihalis.yandexbot.telegram.Bot;
 import jakarta.annotation.PostConstruct;
-import lombok.AccessLevel;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +13,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Slf4j
 @SpringBootApplication
 public class YandexFoodDeliveryBotApplication {
-    @Setter(value = AccessLevel.PRIVATE, onMethod_ = {@Autowired})
+    @Autowired
     private Bot bot;
 
     public static void main(String[] args) {

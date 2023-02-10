@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 @Service
@@ -40,6 +41,10 @@ public class YandexFoodService {
 
     public InputFile takeScreenshot(long userId) {
         return getBrowserPage(userId).screenshot();
+    }
+
+    public List<String> getDeliveryAddresses(long userId) {
+        return pageRepository.getDeliveryAddresses(userId);
     }
 
     public String getDeliveryCost(long userId) {
