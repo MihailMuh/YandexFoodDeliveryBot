@@ -50,13 +50,16 @@ public class BrowserPage extends Page {
     }
 
     public void clickNewAddressButton() {
-        Wait().until(elementToBeClickable(cssSelector("button[class='bzscopr c14xrn6c cow0qbn a71den4 m16coeem m1wd6zeg']"))).click();
-        log.info("NewAddressButton clicked");
-    }
+        boolean addressAlreadyEntered = (boolean) javaScript.executeScript("""
+                    return document.getElementsByClassName("bzscopr c14xrn6c cow0qbn o134i4ad m16coeem m1wd6zeg").length !== 0;
+                """);
 
-    public void clickUpdateAddressButton() {
-        Wait().until(elementToBeClickable(cssSelector("button[class='bzscopr c14xrn6c cow0qbn o134i4ad m16coeem m1wd6zeg']"))).click();
-        log.info("UpdateAddressButton clicked");
+        if (addressAlreadyEntered) {
+            Wait().until(elementToBeClickable(cssSelector("button[class='bzscopr c14xrn6c cow0qbn o134i4ad m16coeem m1wd6zeg']"))).click();
+        } else {
+            Wait().until(elementToBeClickable(cssSelector("button[class='bzscopr c14xrn6c cow0qbn a71den4 m16coeem m1wd6zeg']"))).click();
+        }
+        log.info("NewAddressButton clicked");
     }
 
     @SneakyThrows
@@ -138,9 +141,9 @@ public class BrowserPage extends Page {
         return addresses;
     }
 
-    private WebElement waitForYmaps() {
+    private void waitForYmaps() {
         // wait while ymaps are getting coordinates
-        return Wait(60).until(elementToBeClickable(cssSelector("ymaps[class='ymaps-2-1-79-map']")));
+        Wait(60).until(elementToBeClickable(cssSelector("ymaps[class='ymaps-2-1-79-map']")));
     }
 
     private void removeUnnecessaryButton() {

@@ -60,18 +60,17 @@ public class PageRepository {
     }
 
     public void createPage(long userId, Address address) {
-        BrowserPage page = pagePool.obtain(userId, address);
-        pages.put(userId, page);
+        BrowserPage page;
+        if (pages.containsKey(userId)) {
+            page = pages.get(userId);
 
-        page.inputNewAddress();
-    }
-
-    public void updatePage(long userId, Address address) {
-        BrowserPage page = pages.get(userId);
-
-        page.update(userId, address);
-        page.clickUpdateAddressButton();
-        page.clearOldAddress();
+            page.update(userId, address);
+            page.clickNewAddressButton();
+            page.clearOldAddress();
+        } else {
+            page = pagePool.obtain(userId, address);
+            pages.put(userId, page);
+        }
         page.inputNewAddress();
     }
 

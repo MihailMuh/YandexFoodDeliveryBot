@@ -2,7 +2,6 @@ package com.mihalis.yandexbot.handler;
 
 import com.mihalis.yandexbot.cache.FiniteStateMachine;
 import com.mihalis.yandexbot.model.Address;
-import com.mihalis.yandexbot.repository.AddressRepository;
 import com.mihalis.yandexbot.service.YandexFoodService;
 import com.mihalis.yandexbot.telegram.Parcel;
 import com.mihalis.yandexbot.utils.AddressValidator;
@@ -23,8 +22,6 @@ import static com.mihalis.yandexbot.data.StringMessages.chooseDeliveryAddress;
 public class ChooseDeliveryAddressHandler implements Handler {
     private final FiniteStateMachine finiteStateMachine;
 
-    private final AddressRepository addressRepository;
-
     private final YandexFoodService yandexFoodService;
 
     private final ExecutorService executorService;
@@ -43,23 +40,19 @@ public class ChooseDeliveryAddressHandler implements Handler {
         }
 
         answerWithKeyboardFromBrowser(parcel, Address.of(newAddress));
+
+        parcel.answerAsync("Сверяю этот адрес с Яндекс картами... Это займет около половины минуты");
         finiteStateMachine.setValue(parcel.getUserId(), "userAddress", newAddress);
     }
 
     public void answerWithKeyboardFromBrowser(Parcel parcel, Address newAddress) {
         executorService.execute(() -> {
             long id = parcel.getUserId();
-            if (addressRepository.hasAddress(id)) {
-                yandexFoodService.updateAddress(id, newAddress);
-            } else {
-                yandexFoodService.createNewAddress(id, newAddress);
-            }
+            yandexFoodService.createNewAddress(id, newAddress);
 
             Keyboard addressesKeyboard = generateAddressesKeyboard(yandexFoodService.getDeliveryAddresses(id));
             parcel.answerAsync(chooseDeliveryAddress, addressesKeyboard.getKeyboard());
         });
-
-        parcel.answerAsync("Сверяю этот адрес с Яндекс картами... Это займет около половины минуты");
     }
 
     private Keyboard generateAddressesKeyboard(List<String> deliveryAddresses) {

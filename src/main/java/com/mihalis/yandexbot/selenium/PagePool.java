@@ -46,8 +46,10 @@ public abstract class PagePool {
     }
 
     public void free(BrowserPage browserPage) {
-        browserPage.reset();
-        queue.add(browserPage);
+        executorService.execute(() -> {
+            browserPage.reset();
+            queue.add(browserPage);
+        });
     }
 
     protected abstract BrowserPage page();

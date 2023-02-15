@@ -31,5 +31,7 @@ public class RefreshButtonCallback implements Callback {
 
         Address userAddress = Address.of(String.valueOf(finiteStateMachine.getValue(parcel.getUserId(), "userAddress")));
         chooseDeliveryAddressHandler.answerWithKeyboardFromBrowser(parcel, userAddress);
+
+        parcel.answerAsync("Сверяю...");
     }
 }

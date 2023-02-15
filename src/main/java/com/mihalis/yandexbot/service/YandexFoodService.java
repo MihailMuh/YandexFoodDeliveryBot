@@ -27,10 +27,6 @@ public class YandexFoodService {
         pageRepository.createPage(userId, address);
     }
 
-    public void updateAddress(long userId, Address address) {
-        pageRepository.updatePage(userId, address);
-    }
-
     public void deleteAddress(long userId) {
         pageRepository.deletePage(userId);
     }
