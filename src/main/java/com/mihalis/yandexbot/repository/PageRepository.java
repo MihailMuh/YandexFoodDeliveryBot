@@ -4,12 +4,14 @@ import com.mihalis.yandexbot.model.Address;
 import com.mihalis.yandexbot.model.DeliveryData;
 import com.mihalis.yandexbot.selenium.BrowserPage;
 import com.mihalis.yandexbot.selenium.PagePool;
+import com.mihalis.yandexbot.selenium.exceptions.NoDeliveryException;
 import jakarta.annotation.PreDestroy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.util.List;
 import java.util.Map;
@@ -73,10 +75,6 @@ public class PageRepository {
         page.inputNewAddress();
     }
 
-    public BrowserPage getPage(long userId) {
-        return pages.get(userId);
-    }
-
     public void deletePage(long id) {
         if (pages.containsKey(id)) {
             pagePool.free(pages.remove(id));
@@ -85,12 +83,15 @@ public class PageRepository {
         }
     }
 
-    public List<String> getDeliveryAddresses(long userId) {
-        return getPage(userId).getDeliveryAddresses();
+    public String getDeliveryCost(long userId, int addressRowIndex) throws NoDeliveryException {
+        BrowserPage page = pages.get(userId);
+        page.applyAddress(addressRowIndex);
+
+        return page.getDeliveryCost();
     }
 
-    public void cancelPage(long id) {
-        getPage(id).cancel();
+    public List<String> getDeliveryAddresses(long userId) {
+        return pages.get(userId).getDeliveryAddresses();
     }
 
     public void iterateDeliveryCosts(Consumer<DeliveryData> costConsumer) {
@@ -99,6 +100,10 @@ public class PageRepository {
         for (Map.Entry<Long, BrowserPage> entry : pagesList) {
             executorService.execute(() -> costConsumer.accept(createDeliveryData(entry)));
         }
+    }
+
+    public InputFile getScreenshot(long userId) {
+        return new InputFile(pages.get(userId).screenshot());
     }
 
     private DeliveryData createDeliveryData(Map.Entry<Long, BrowserPage> entry) {

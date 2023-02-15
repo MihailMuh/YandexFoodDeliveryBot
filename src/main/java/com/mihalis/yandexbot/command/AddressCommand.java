@@ -1,6 +1,6 @@
 package com.mihalis.yandexbot.command;
 
-import com.mihalis.yandexbot.cache.AddressState;
+import com.mihalis.yandexbot.cache.FiniteStateMachine;
 import com.mihalis.yandexbot.model.Address;
 import com.mihalis.yandexbot.repository.AddressRepository;
 import com.mihalis.yandexbot.telegram.Parcel;
@@ -12,15 +12,15 @@ import static com.mihalis.yandexbot.data.StringMessages.enterNewDeliveryAddress;
 @Component
 public class AddressCommand extends Command {
     private final AddressRepository addressesCache;
-    private final AddressState addressState;
+    private final FiniteStateMachine finiteStateMachine;
 
     private final InlineKeyboardMarkup cancelKeyboard;
 
     public AddressCommand(AddressRepository addressRepository, InlineKeyboardMarkup cancelKeyboard,
-                          AddressState addressState) {
+                          FiniteStateMachine finiteStateMachine) {
         super("address");
         this.addressesCache = addressRepository;
-        this.addressState = addressState;
+        this.finiteStateMachine = finiteStateMachine;
         this.cancelKeyboard = cancelKeyboard;
     }
 
@@ -29,7 +29,7 @@ public class AddressCommand extends Command {
         sendCurrentAddress(parcel);
         parcel.answerAsync(enterNewDeliveryAddress, cancelKeyboard);
 
-        addressState.setActive(parcel.getUserId(), true);
+        finiteStateMachine.setValue(parcel.getUserId(), "dialogState", "chooseDeliveryAddress");
     }
 
     private void sendCurrentAddress(Parcel parcel) {

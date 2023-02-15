@@ -1,13 +1,16 @@
 package com.mihalis.yandexbot.model;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.io.Serializable;
 
 @Getter
+@Builder
 @ToString
+@Jacksonized
 @EqualsAndHashCode
-@Builder(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Address implements Serializable {
     private final String originalAddress;
 

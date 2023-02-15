@@ -2,7 +2,7 @@ package com.mihalis.yandexbot.telegram;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.openqa.selenium.InvalidArgumentException;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -13,10 +13,6 @@ public class Parcel {
     private final AbsSender bot;
 
     private final Message message;
-
-    public Parcel(BaseBot bot, long userId) {
-        this(bot, getRawMessage(userId));
-    }
 
     public long getUserId() {
         return message.getChatId();
@@ -53,9 +49,7 @@ public class Parcel {
                 case InlineKeyboardMarkup keyboard -> message.keyboard(keyboard);
                 case InputFile photo -> message.photo(photo);
                 case String parseMode -> message.parseMode(parseMode);
-                default -> {
-                    // Pass if argument is a random value
-                }
+                default -> throw new InvalidArgumentException("Unknown argument: " + arg.getClass().getSimpleName());
             }
         }
         return message;
@@ -66,16 +60,5 @@ public class Parcel {
                 .builder()
                 .id(message.getChatId())
                 .text(text);
-    }
-
-    private static Message getRawMessage(long userId) {
-        Chat chat = new Chat();
-        chat.setId(userId);
-
-        Message message = new Message();
-        message.setChat(chat);
-        message.setText("");
-
-        return message;
     }
 }

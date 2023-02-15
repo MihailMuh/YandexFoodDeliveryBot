@@ -13,6 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
+import java.util.HashMap;
+
 @Configuration
 class RedisConfiguration {
     @Primary
@@ -36,16 +38,19 @@ class RedisConfiguration {
         RedisTemplate<String, Address> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(addressConnection);
         redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
+        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Address.class));
         redisTemplate.afterPropertiesSet();
 
         return redisTemplate.opsForValue();
     }
 
     @Bean(name = "addressStateStorage")
-    public ValueOperations<Long, Boolean> getAddressStateStorage(@Qualifier("addressStateConnection")
+    public ValueOperations<Long, HashMap> getAddressStateStorage(@Qualifier("addressStateConnection")
                                                                    LettuceConnectionFactory newAddressConnection) {
-        RedisTemplate<Long, Boolean> redisTemplate = new RedisTemplate<>();
+        RedisTemplate<Long, HashMap> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(newAddressConnection);
+        redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(Long.class));
+        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(HashMap.class));
         redisTemplate.afterPropertiesSet();
 
         return redisTemplate.opsForValue();

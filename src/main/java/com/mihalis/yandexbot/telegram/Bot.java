@@ -1,6 +1,6 @@
 package com.mihalis.yandexbot.telegram;
 
-import com.mihalis.yandexbot.cache.AddressState;
+import com.mihalis.yandexbot.cache.FiniteStateMachine;
 import com.mihalis.yandexbot.service.YandexFoodService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -11,15 +11,15 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class Bot extends BaseBot {
-    private final AddressState addressState;
+    private final FiniteStateMachine finiteStateMachine;
 
     public Bot(@Value("${telegram.bot.username}") String botUsername,
                @Value("${telegram.bot.token}") String botToken,
                ConfigurableListableBeanFactory beanFactory,
                DefaultBotOptions defaultBotOptions,
-               YandexFoodService yandexFoodService, AddressState addressState) {
+               YandexFoodService yandexFoodService, FiniteStateMachine finiteStateMachine) {
         super(defaultBotOptions, botUsername, botToken, beanFactory);
-        this.addressState = addressState;
+        this.finiteStateMachine = finiteStateMachine;
 
         registerUsersForNotification(yandexFoodService);
     }
@@ -27,7 +27,8 @@ public class Bot extends BaseBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().isCommand()
-                && !addressState.isActive(update.getMessage().getChatId())) {
+                && !finiteStateMachine.hasState(update.getMessage().getChatId())) {
+
             processCommandUpdate(update);
             return;
         }

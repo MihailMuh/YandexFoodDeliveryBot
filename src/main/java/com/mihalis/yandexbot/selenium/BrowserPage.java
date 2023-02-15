@@ -23,7 +23,7 @@ public class BrowserPage extends Page {
 
     private Logger log;
 
-    private WebElement yandexMaps, inputAddress;
+    private WebElement inputAddress;
 
     private boolean young = true;
 
@@ -62,8 +62,6 @@ public class BrowserPage extends Page {
     @SneakyThrows
     public void clearOldAddress() {
         // while maps loads location, we just wait
-        yandexMaps = Wait(60).until(elementToBeClickable(cssSelector("ymaps[class='ymaps-2-1-79-map']")));
-
         Thread.sleep(700);
 
         inputAddress = Wait().until(elementToBeClickable(cssSelector("input[class='i164506l']")));
@@ -76,20 +74,25 @@ public class BrowserPage extends Page {
 
     @SneakyThrows
     public void inputNewAddress() {
-        String address = userAddress.getOriginalAddress() + "  ";
+        String address = userAddress.getOriginalAddress();
         for (int i = 0; i < address.length(); i++) {
             inputAddress.sendKeys(address.substring(i, i + 1)); // one symbol
-            Thread.sleep(200);
-            Wait().until(elementToBeClickable(yandexMaps));
+            Thread.sleep(250);
         }
 
         log.info("New address entered");
     }
 
-    public void applyNewAddress() {
+    public void applyAddress(int addressRowIndex) throws NoDeliveryException {
+        for (int i = 0; i < addressRowIndex + 1; i++) {
+            inputAddress.sendKeys(DOWN);
+        }
+        inputAddress.sendKeys(ENTER);
+
+        waitForYmaps();
         try {
             By okButtonScc = cssSelector("button[class='bzscopr f19ph74x c14xrn6c cow0qbn a71den4 m16coeem m1wd6zeg w3gf8dt']");
-            Wait().until(presenceOfElementLocated(okButtonScc)).click();
+            Wait(5).until(presenceOfElementLocated(okButtonScc)).click();
 
             log.info("New address confirmed");
         } catch (Exception exception) {
@@ -115,18 +118,16 @@ public class BrowserPage extends Page {
 
     @SneakyThrows
     public List<String> getDeliveryAddresses() {
-        waitForListBox();
-        WebElement listBox = browser.findElement(cssSelector("ul[class='l1xltboq']"));
+        // wait while all addresses in the list box are updated
         Thread.sleep(1000);
 
+        WebElement listBox = browser.findElement(cssSelector("ul[class='l1xltboq']"));
         String[] rawAddresses = listBox.getText().split("\n");
         ArrayList<String> addresses = new ArrayList<>();
 
         for (int i = 0; i < rawAddresses.length - 1; i += 2) {
             String street = rawAddresses[i];
-
-            // something like this: Екатеринбург, Свердловская область
-            String townAndState = rawAddresses[i + 1];
+            String townAndState = rawAddresses[i + 1]; // something like this: "Екатеринбург, Свердловская область"
             String town = townAndState.split(", ")[0];
 
             addresses.add(town + ", " + street);
@@ -137,37 +138,9 @@ public class BrowserPage extends Page {
         return addresses;
     }
 
-    public void cancel() {
-        Wait().until(elementToBeClickable(cssSelector("button[class='c1vwcsci']"))).click();
-
-        log.info("Popup canceled");
-    }
-
-    @SneakyThrows
-    private void inputWholeAddress(List<String> addresses) {
-        for (String address : addresses) {
-            inputAddress.sendKeys(address);
-            inputAddress.sendKeys(SPACE);
-
-            waitForListBox();
-        }
-    }
-
-    @SneakyThrows
-    private void waitForListBox() {
-        while (true) {
-            Wait().until(elementToBeClickable(yandexMaps));
-
-            boolean listBoxVisible = (boolean) javaScript.executeScript(
-                    "return document.getElementsByClassName('l1xltboq').length > 0;"
-            );
-            if (listBoxVisible) {
-                return;
-            }
-
-            inputAddress.sendKeys(SPACE);
-            Thread.sleep(500);
-        }
+    private WebElement waitForYmaps() {
+        // wait while ymaps are getting coordinates
+        return Wait(60).until(elementToBeClickable(cssSelector("ymaps[class='ymaps-2-1-79-map']")));
     }
 
     private void removeUnnecessaryButton() {
@@ -178,7 +151,7 @@ public class BrowserPage extends Page {
                     for (const button of document.getElementsByClassName("bzscopr c14xrn6c cow0qbn o134i4ad m16coeem m1wd6zeg")) {
                         if (button.hasAttribute("aria-haspopup")) {
                             button.remove();
-                            break;
+                            return;
                         }
                     }
                 """);

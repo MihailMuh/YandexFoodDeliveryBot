@@ -3,7 +3,7 @@ package com.mihalis.yandexbot.service;
 import com.mihalis.yandexbot.model.Address;
 import com.mihalis.yandexbot.model.DeliveryData;
 import com.mihalis.yandexbot.repository.PageRepository;
-import com.mihalis.yandexbot.selenium.BrowserPage;
+import com.mihalis.yandexbot.selenium.exceptions.NoDeliveryException;
 import com.mihalis.yandexbot.utils.Timer;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,23 +35,15 @@ public class YandexFoodService {
         pageRepository.deletePage(userId);
     }
 
-    public void cancelAddress(long userId) {
-        pageRepository.cancelPage(userId);
-    }
-
-    public InputFile takeScreenshot(long userId) {
-        return getBrowserPage(userId).screenshot();
-    }
-
     public List<String> getDeliveryAddresses(long userId) {
         return pageRepository.getDeliveryAddresses(userId);
     }
 
-    public String getDeliveryCost(long userId) {
-        return getBrowserPage(userId).getDeliveryCost();
+    public String getDeliveryCost(long userId, int addressRowIndex) throws NoDeliveryException {
+        return pageRepository.getDeliveryCost(userId, addressRowIndex);
     }
 
-    private BrowserPage getBrowserPage(long userId) {
-        return pageRepository.getPage(userId);
+    public InputFile getScreenshot(long userId) {
+        return pageRepository.getScreenshot(userId);
     }
 }

@@ -1,6 +1,6 @@
 package com.mihalis.yandexbot.selenium.exceptions;
 
-public class NoDeliveryException extends RuntimeException {
+public class NoDeliveryException extends Exception {
     public NoDeliveryException() {
         super();
     }

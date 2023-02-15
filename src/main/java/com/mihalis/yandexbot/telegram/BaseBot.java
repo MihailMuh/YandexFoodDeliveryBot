@@ -96,11 +96,8 @@ public abstract class BaseBot extends TelegramLongPollingBot {
     }
 
     private Parcel createParcel(Update update) {
-        if (!update.hasMessage()) {
-            return new Parcel(this, update.getCallbackQuery().getFrom().getId());
-        } else {
-            return new Parcel(this, update.getMessage());
-        }
+        Message message = update.hasCallbackQuery() ? update.getCallbackQuery().getMessage() : update.getMessage();
+        return new Parcel(this, message);
     }
 
     private void registerCommands(ConfigurableListableBeanFactory beanFactory) {
