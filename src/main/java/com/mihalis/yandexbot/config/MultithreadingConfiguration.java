@@ -1,7 +1,6 @@
 package com.mihalis.yandexbot.config;
 
 import com.mihalis.yandexbot.repository.AddressRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +18,7 @@ public class MultithreadingConfiguration {
     }
 
     @Bean(name = "pagePoolCapacity")
-    public int getPagePoolCapacity(@Autowired AddressRepository addressRepository,
-                                   @Value("${app.parallelism}") int parallelism) {
+    public int getPagePoolCapacity(AddressRepository addressRepository, @Value("${app.parallelism}") int parallelism) {
         return max(addressRepository.items().size() * 2, parallelism);
     }
 }

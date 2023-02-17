@@ -1,39 +1,31 @@
 package com.mihalis.yandexbot.cache;
 
 import lombok.AllArgsConstructor;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
 
 @Component
 @AllArgsConstructor
 public class FiniteStateMachine {
-    private final ValueOperations<Long, HashMap> finiteStateMachineStorage;
+    private final HashOperations<String, String, Object> finiteStateMachineStorage;
 
     public void setValue(long userId, String key, Object value) {
-        HashMap<String, Object> data = getDict(userId);
-        data.put(key, value);
-
-        finiteStateMachineStorage.set(userId, data);
+        finiteStateMachineStorage.put(str(userId), key, value);
     }
 
     public Object getValue(long userId, String key) {
-        return getDict(userId).get(key);
+        return finiteStateMachineStorage.get(str(userId), key);
     }
 
     public boolean hasState(long userId) {
-        return Boolean.TRUE.equals(finiteStateMachineStorage.getOperations().hasKey(userId));
+        return Boolean.TRUE.equals(finiteStateMachineStorage.getOperations().hasKey(str(userId)));
     }
 
     public void delete(long userId) {
-        finiteStateMachineStorage.getOperations().delete(userId);
+        finiteStateMachineStorage.getOperations().delete(str(userId));
     }
 
-    private HashMap<String, Object> getDict(long userId) {
-        if (Boolean.FALSE.equals(finiteStateMachineStorage.getOperations().hasKey(userId))) {
-            return new HashMap<>();
-        }
-        return finiteStateMachineStorage.get(userId);
+    private static String str(long id) {
+        return String.valueOf(id);
     }
 }

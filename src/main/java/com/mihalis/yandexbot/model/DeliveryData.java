@@ -5,8 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-@Builder
 @Getter
+@Builder
 @ToString
 @EqualsAndHashCode
 public class DeliveryData {

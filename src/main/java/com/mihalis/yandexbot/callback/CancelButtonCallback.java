@@ -1,7 +1,6 @@
 package com.mihalis.yandexbot.callback;
 
 import com.mihalis.yandexbot.cache.FiniteStateMachine;
-import com.mihalis.yandexbot.service.YandexFoodService;
 import com.mihalis.yandexbot.telegram.Parcel;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,8 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 @AllArgsConstructor
 public class CancelButtonCallback implements Callback {
     private final FiniteStateMachine finiteStateMachine;
-
-    private final YandexFoodService yandexFoodService;
 
     @Override
     public boolean relevantCondition(CallbackQuery callback) {
@@ -24,6 +21,5 @@ public class CancelButtonCallback implements Callback {
         parcel.answerAsync("Операция отменена");
 
         finiteStateMachine.delete(parcel.getUserId());
-        yandexFoodService.deleteAddress(parcel.getUserId()); // delete unnecessary page
     }
 }

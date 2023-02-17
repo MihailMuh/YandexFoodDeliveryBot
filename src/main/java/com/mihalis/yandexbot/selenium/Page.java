@@ -34,16 +34,16 @@ abstract class Page {
         return ((TakesScreenshot) browser).getScreenshotAs(OutputType.FILE);
     }
 
-    protected abstract void init();
-
-    protected void refreshPage() {
-        browser.navigate().refresh();
-    }
-
     void reset() {
         browser.manage().deleteAllCookies();
         refreshPage();
         init();
+    }
+
+    protected abstract void init();
+
+    protected void refreshPage() {
+        browser.navigate().refresh();
     }
 
     protected final WebDriverWait Wait() {

@@ -38,8 +38,6 @@ public class BrowserPage extends Page {
 
     @Override
     protected void init() {
-        removeUnnecessaryButton();
-
         clickNewAddressButton();
         clearOldAddress();
     }
@@ -51,13 +49,13 @@ public class BrowserPage extends Page {
 
     public void clickNewAddressButton() {
         boolean addressAlreadyEntered = (boolean) javaScript.executeScript("""
-                    return document.getElementsByClassName("bzscopr c14xrn6c cow0qbn o134i4ad m16coeem m1wd6zeg").length !== 0;
+                    return document.querySelector("div[class='shown cc9u8rz']") === null;
                 """);
 
         if (addressAlreadyEntered) {
-            Wait().until(elementToBeClickable(cssSelector("button[class='bzscopr c14xrn6c cow0qbn o134i4ad m16coeem m1wd6zeg']"))).click();
+            browser.findElement(cssSelector("html > body > div > header > div:nth-of-type(5) > button")).click();
         } else {
-            Wait().until(elementToBeClickable(cssSelector("button[class='bzscopr c14xrn6c cow0qbn a71den4 m16coeem m1wd6zeg']"))).click();
+            browser.findElement(cssSelector("div[class='shown cc9u8rz']")).click();
         }
         log.info("NewAddressButton clicked");
     }
@@ -106,7 +104,6 @@ public class BrowserPage extends Page {
     public String getDeliveryCost() {
         if (!young) {
             refreshPage();
-            removeUnnecessaryButton();
             log.info("refresh");
         } else {
             young = false;
@@ -144,19 +141,5 @@ public class BrowserPage extends Page {
     private void waitForYmaps() {
         // wait while ymaps are getting coordinates
         Wait(60).until(elementToBeClickable(cssSelector("ymaps[class='ymaps-2-1-79-map']")));
-    }
-
-    private void removeUnnecessaryButton() {
-        // Later on this page will be placed button for changing delivery address.
-        // And this button is equals button which shows catalog.
-        // so remove unnecessary
-        javaScript.executeScript("""
-                    for (const button of document.getElementsByClassName("bzscopr c14xrn6c cow0qbn o134i4ad m16coeem m1wd6zeg")) {
-                        if (button.hasAttribute("aria-haspopup")) {
-                            button.remove();
-                            return;
-                        }
-                    }
-                """);
     }
 }

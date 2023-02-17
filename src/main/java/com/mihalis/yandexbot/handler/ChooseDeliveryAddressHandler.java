@@ -40,14 +40,18 @@ public class ChooseDeliveryAddressHandler implements Handler {
         }
 
         answerWithKeyboardFromBrowser(parcel, Address.of(newAddress));
-
         parcel.answerAsync("Сверяю этот адрес с Яндекс картами... Это займет около половины минуты");
-        finiteStateMachine.setValue(parcel.getUserId(), "userAddress", newAddress);
+
+        finiteStateMachine.setValue(parcel.getUserId(), "userAddress", Address.of(newAddress));
     }
 
     public void answerWithKeyboardFromBrowser(Parcel parcel, Address newAddress) {
         executorService.execute(() -> {
             long id = parcel.getUserId();
+
+            // delete old page associated for this user id
+            // page deleting happens only there
+            yandexFoodService.deleteAddress(id);
             yandexFoodService.createNewAddress(id, newAddress);
 
             Keyboard addressesKeyboard = generateAddressesKeyboard(yandexFoodService.getDeliveryAddresses(id));

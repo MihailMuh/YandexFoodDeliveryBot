@@ -43,15 +43,14 @@ public class DeliveryAddressCallback implements Callback {
 
     @Override
     public void handleParcel(Parcel parcel) {
-        String userAddress = String.valueOf(finiteStateMachine.getValue(parcel.getUserId(), "userAddress"));
+        Address userAddress = (Address) finiteStateMachine.getValue(parcel.getUserId(), "userAddress");
 
         parcel.answerAsync("Смотрю стоимость доставки...");
 
         executorService.execute(() ->
         {
             try {
-                answerDeliveryCost(parcel, addressRowIndex, userAddress);
-                finiteStateMachine.delete(parcel.getUserId());
+                answerDeliveryCost(parcel, addressRowIndex, userAddress.getOriginalAddress());
             } catch (NoDeliveryException e) {
                 answerNoDeliveryAddress(parcel);
             }

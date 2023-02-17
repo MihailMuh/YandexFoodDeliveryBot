@@ -23,9 +23,17 @@
         <netty.version>4.1.87.Final</netty.version>
         <spring.version>6.0.4</spring.version>
         <selenium.version>4.7.2</selenium.version>
+        <reflect.types.version>0.6.3</reflect.types.version>
     </properties>
 
     <dependencies>
+<!--        reflect type methods-->
+        <dependency>
+            <groupId>net.jodah</groupId>
+            <artifactId>typetools</artifactId>
+            <version>${reflect.types.version}</version>
+        </dependency>
+
         <!-- selenium -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>

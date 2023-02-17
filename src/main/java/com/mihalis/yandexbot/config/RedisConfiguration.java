@@ -1,66 +1,54 @@
 package com.mihalis.yandexbot.config;
 
 import com.mihalis.yandexbot.model.Address;
-import lombok.val;
-import org.springframework.beans.factory.annotation.Qualifier;
+import net.jodah.typetools.TypeResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisSocketConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
-import java.util.HashMap;
-
 @Configuration
 class RedisConfiguration {
-    @Primary
-    @Bean(name = "addressConnection")
-    public LettuceConnectionFactory getAddressConnection(
-            @Value("${spring.data.redis.socket}") String unixSocketPath, @Value("${spring.data.redis.database.old-address}") int database) {
+    @Value("${spring.data.redis.socket}")
+    private String unixSocketPath;
 
-        return getConnection(unixSocketPath, database);
+    @Bean
+    public ValueOperations<String, Address> getAddressStorage(@Value("${spring.data.redis.database.address}") int database) {
+        return new Redis<String, Address>().getOperations(unixSocketPath, database).opsForValue();
     }
 
-    @Bean(name = "addressStateConnection")
-    public LettuceConnectionFactory getAddressStateConnection(
-            @Value("${spring.data.redis.socket}") String unixSocketPath, @Value("${spring.data.redis.database.new-address}") int database) {
-
-        return getConnection(unixSocketPath, database);
+    @Bean
+    public HashOperations<String, String, Object> getAddressStateStorage(@Value("${spring.data.redis.database.fsm}") int database) {
+        return new Redis<String, Object>().getOperations(unixSocketPath, database).opsForHash();
     }
 
-    @Bean(name = "addressStorage")
-    public ValueOperations<String, Address> getAddressStorage(@Qualifier("addressConnection")
-                                                                 LettuceConnectionFactory addressConnection) {
-        RedisTemplate<String, Address> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(addressConnection);
-        redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Address.class));
-        redisTemplate.afterPropertiesSet();
+    private static class Redis<K, V> {
+        private final Class<?>[] typeArguments = TypeResolver.resolveRawArguments(Redis.class, getClass());
 
-        return redisTemplate.opsForValue();
-    }
+        RedisTemplate<K, V> getOperations(String unixSocketPath, int database) {
+            RedisSocketConfiguration redis = new RedisSocketConfiguration();
+            redis.setSocket(unixSocketPath);
+            redis.setDatabase(database);
 
-    @Bean(name = "addressStateStorage")
-    public ValueOperations<Long, HashMap> getAddressStateStorage(@Qualifier("addressStateConnection")
-                                                                   LettuceConnectionFactory newAddressConnection) {
-        RedisTemplate<Long, HashMap> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(newAddressConnection);
-        redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(Long.class));
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(HashMap.class));
-        redisTemplate.afterPropertiesSet();
+            LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redis);
+            lettuceConnectionFactory.afterPropertiesSet();
 
-        return redisTemplate.opsForValue();
-    }
+            RedisTemplate<K, V> redisTemplate = new RedisTemplate<>();
+            redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+            redisTemplate.setKeySerializer(getSerializer(0));
+            redisTemplate.setValueSerializer(getSerializer(1));
+            redisTemplate.afterPropertiesSet();
 
-    private LettuceConnectionFactory getConnection(String unixSocketPath, int database) {
-        val redis = new RedisSocketConfiguration();
-        redis.setSocket(unixSocketPath);
-        redis.setDatabase(database);
+            return redisTemplate;
+        }
 
-        return new LettuceConnectionFactory(redis);
+        private Jackson2JsonRedisSerializer<?> getSerializer(int typeArgumentIndex) {
+            return new Jackson2JsonRedisSerializer<>(typeArguments[typeArgumentIndex]);
+        }
     }
 }

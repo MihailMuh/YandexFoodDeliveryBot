@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 @Slf4j
 @Repository
 public class PageRepository {
-    private final ConcurrentHashMap<Long, BrowserPage> pages = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, BrowserPage> pages = new ConcurrentHashMap<>();
 
     private final ExecutorService executorService;
 
