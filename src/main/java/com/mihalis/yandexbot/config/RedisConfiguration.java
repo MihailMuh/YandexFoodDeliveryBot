@@ -1,7 +1,6 @@
 package com.mihalis.yandexbot.config;
 
 import com.mihalis.yandexbot.model.Address;
-import net.jodah.typetools.TypeResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,18 +18,21 @@ class RedisConfiguration {
 
     @Bean
     public ValueOperations<String, Address> getAddressStorage(@Value("${spring.data.redis.database.address}") int database) {
-        return new Redis<String, Address>().getOperations(unixSocketPath, database).opsForValue();
+        return new Redis<Address>().getOperations(Address.class, unixSocketPath, database).opsForValue();
     }
 
     @Bean
     public HashOperations<String, String, Object> getAddressStateStorage(@Value("${spring.data.redis.database.fsm}") int database) {
-        return new Redis<String, Object>().getOperations(unixSocketPath, database).opsForHash();
+        return new Redis<>().getOperations(Object.class, unixSocketPath, database).opsForHash();
     }
 
-    private static class Redis<K, V> {
-        private final Class<?>[] typeArguments = TypeResolver.resolveRawArguments(Redis.class, getClass());
+    @Bean
+    public ValueOperations<String, String> getProfileStorage(@Value("${spring.data.redis.database.profile}") int database) {
+        return new Redis<String>().getOperations(String.class, unixSocketPath, database).opsForValue();
+    }
 
-        RedisTemplate<K, V> getOperations(String unixSocketPath, int database) {
+    private static class Redis<V> {
+        RedisTemplate<String, V> getOperations(Class<V> valueClass, String unixSocketPath, int database) {
             RedisSocketConfiguration redis = new RedisSocketConfiguration();
             redis.setSocket(unixSocketPath);
             redis.setDatabase(database);
@@ -38,17 +40,15 @@ class RedisConfiguration {
             LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redis);
             lettuceConnectionFactory.afterPropertiesSet();
 
-            RedisTemplate<K, V> redisTemplate = new RedisTemplate<>();
+            RedisTemplate<String, V> redisTemplate = new RedisTemplate<>();
             redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-            redisTemplate.setKeySerializer(getSerializer(0));
-            redisTemplate.setValueSerializer(getSerializer(1));
+            redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
+            redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(valueClass));
+            redisTemplate.setStringSerializer(new Jackson2JsonRedisSerializer<>(String.class));
+            redisTemplate.setHashKeySerializer(new Jackson2JsonRedisSerializer<>(String.class));
             redisTemplate.afterPropertiesSet();
 
             return redisTemplate;
-        }
-
-        private Jackson2JsonRedisSerializer<?> getSerializer(int typeArgumentIndex) {
-            return new Jackson2JsonRedisSerializer<>(typeArguments[typeArgumentIndex]);
         }
     }
 }

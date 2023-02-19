@@ -2,9 +2,9 @@ package com.mihalis.yandexbot.cache;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
+@Repository
 @AllArgsConstructor
 public class FiniteStateMachine {
     private final HashOperations<String, String, Object> finiteStateMachineStorage;

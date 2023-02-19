@@ -32,5 +32,6 @@ build/
 .vscode/
 
 docker/
+profiles/
 src/main/resources/application.properties
 *.log

@@ -42,4 +42,8 @@ public class YandexFoodService {
     public InputFile getScreenshot(long userId) {
         return pageRepository.getScreenshot(userId);
     }
+
+    public String getBrowserProfileName(long userId) {
+        return pageRepository.getBrowserProfileName(userId);
+    }
 }

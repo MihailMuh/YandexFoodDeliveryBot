@@ -3,6 +3,7 @@ package com.mihalis.yandexbot.callback;
 import com.mihalis.yandexbot.cache.FiniteStateMachine;
 import com.mihalis.yandexbot.model.Address;
 import com.mihalis.yandexbot.repository.AddressRepository;
+import com.mihalis.yandexbot.repository.ProfileRepository;
 import com.mihalis.yandexbot.selenium.exceptions.NoDeliveryException;
 import com.mihalis.yandexbot.service.YandexFoodService;
 import com.mihalis.yandexbot.telegram.Parcel;
@@ -23,6 +24,7 @@ import static java.lang.Integer.parseInt;
 public class DeliveryAddressCallback implements Callback {
     private final FiniteStateMachine finiteStateMachine;
     private final AddressRepository addressRepository;
+    private final ProfileRepository profileRepository;
 
     private final YandexFoodService yandexFoodService;
 
@@ -57,12 +59,14 @@ public class DeliveryAddressCallback implements Callback {
         });
     }
 
-    private void answerDeliveryCost(Parcel parcel, int addressRawIndex, String address) throws NoDeliveryException {
+    private void answerDeliveryCost(Parcel parcel, int addressRawIndex, String addressString) throws NoDeliveryException {
+        Address address = Address.of(addressString);
         long id = parcel.getUserId();
 
-        parcel.answerAsync(address + "\n" + yandexFoodService.getDeliveryCost(id, addressRawIndex));
+        parcel.answerAsync(addressString + "\n" + yandexFoodService.getDeliveryCost(id, addressRawIndex));
 
-        addressRepository.setAddress(id, Address.of(address));
+        profileRepository.set(id, yandexFoodService.getBrowserProfileName(id));
+        addressRepository.setAddress(id, address);
         finiteStateMachine.delete(id);
     }
 

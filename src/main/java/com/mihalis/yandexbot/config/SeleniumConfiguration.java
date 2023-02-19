@@ -1,7 +1,9 @@
 package com.mihalis.yandexbot.config;
 
+import com.mihalis.yandexbot.repository.ProfileRepository;
 import com.mihalis.yandexbot.selenium.BrowserPage;
 import com.mihalis.yandexbot.selenium.PagePool;
+import lombok.RequiredArgsConstructor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -13,12 +15,18 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.ExecutorService;
 
 @Configuration
+@RequiredArgsConstructor
 public class SeleniumConfiguration {
+    private final ProfileRepository profileRepository;
+
     @Value("${app.yandex.url}")
     private String yandexUrl;
 
     @Value("${app.browser.headless}")
     private boolean headless;
+
+    @Value("${app.browser.data.dir}")
+    private String browserDataDir;
 
     @Autowired
     @Bean(destroyMethod = "shutdown")
@@ -26,18 +34,21 @@ public class SeleniumConfiguration {
         return new PagePool(executorService, pagePoolCapacity) {
             @Override
             protected BrowserPage page() {
-                return createPage();
+                String profileName = profileRepository.get();
+                return new BrowserPage(yandexUrl, createBrowser(profileName), profileName);
             }
         };
     }
 
-    private BrowserPage createPage() {
-        return new BrowserPage(yandexUrl, createBrowser());
-    }
-
-    private WebDriver createBrowser() {
+    private WebDriver createBrowser(String profileName) {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--start-maximized", "--disable-dev-shm-usage");
+        options.addArguments(
+                "--no-sandbox",
+                "--start-maximized",
+                "--disable-dev-shm-usage",
+                "--allow-profiles-outside-user-dir",
+                "--user-data-dir=" + browserDataDir + profileName
+        );
         options.setHeadless(headless);
 
         return new ChromeDriver(options);

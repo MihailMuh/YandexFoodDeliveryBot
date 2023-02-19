@@ -21,19 +21,15 @@ public class BrowserPage extends Page {
     @Getter
     private Address userAddress;
 
-    private Logger log;
 
     private WebElement inputAddress;
 
-    private boolean young = true;
+    public BrowserPage(String yandexUrl, WebDriver browser, String profileName) {
+        super(yandexUrl, browser, profileName);
 
-    public BrowserPage(String yandexUrl, WebDriver browser) {
-        super(yandexUrl, browser);
-
-        log = LoggerFactory.getLogger(getClass().getSimpleName());
-        log.info("Browser created!");
-
-        init();
+        if (clearProfile) {
+            init();
+        }
     }
 
     @Override
@@ -48,11 +44,7 @@ public class BrowserPage extends Page {
     }
 
     public void clickNewAddressButton() {
-        boolean addressAlreadyEntered = (boolean) javaScript.executeScript("""
-                    return document.querySelector("div[class='shown cc9u8rz']") === null;
-                """);
-
-        if (addressAlreadyEntered) {
+        if (!clearProfile) {
             browser.findElement(cssSelector("html > body > div > header > div:nth-of-type(5) > button")).click();
         } else {
             browser.findElement(cssSelector("div[class='shown cc9u8rz']")).click();
@@ -102,11 +94,11 @@ public class BrowserPage extends Page {
     }
 
     public String getDeliveryCost() {
-        if (!young) {
+        if (!clearProfile) {
             refreshPage();
             log.info("refresh");
         } else {
-            young = false;
+            clearProfile = false;
         }
 
         By deliveryCostDiv = cssSelector("div[class='t1vrfrqt t18stym3 bw441np r88klks r1dbrdpx n10d4det l14lhr1r']");

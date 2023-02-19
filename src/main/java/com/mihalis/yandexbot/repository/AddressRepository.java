@@ -46,10 +46,6 @@ public class AddressRepository {
     }
 
     public Address getAddress(long chatId) {
-        Address address = addressStorage.get(String.valueOf(chatId));
-        if (address == null) {
-            return Address.empty();
-        }
-        return address;
+        return addressStorage.get(String.valueOf(chatId));
     }
 }

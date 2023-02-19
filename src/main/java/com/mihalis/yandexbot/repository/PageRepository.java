@@ -41,18 +41,9 @@ public class PageRepository {
 
         for (Pair<Long, Address> pair : addresses) {
             executorService.execute(() -> {
-                // here address is valid, but there's a chance, that function crashes
-                // if it happens - just repeat
-                while (true) {
-                    try {
-                        createPage(pair.getFirst(), pair.getSecond());
-                        countDownLatch.countDown();
-                        return;
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                        deletePage(pair.getFirst());
-                    }
-                }
+                createPage(pair.getFirst(), pair.getSecond());
+
+                countDownLatch.countDown();
             });
         }
 
@@ -60,23 +51,17 @@ public class PageRepository {
     }
 
     public void createPage(long userId, Address address) {
-        BrowserPage page;
-        if (pages.containsKey(userId)) {
-            page = pages.get(userId);
+        BrowserPage page = pagePool.obtain(userId, address);
+        pages.put(userId, page);
 
-            page.update(userId, address);
-            page.clickNewAddressButton();
-            page.clearOldAddress();
-        } else {
-            page = pagePool.obtain(userId, address);
-            pages.put(userId, page);
+        if (page.hasClearProfile()) {
+            page.inputNewAddress();
         }
-        page.inputNewAddress();
     }
 
-    public void deletePage(long id) {
-        if (pages.containsKey(id)) {
-            pagePool.free(pages.remove(id));
+    public void deletePage(long userId) {
+        if (pages.containsKey(userId)) {
+            pagePool.free(pages.remove(userId));
 
             log.info("Old page deleted");
         }
@@ -103,6 +88,10 @@ public class PageRepository {
 
     public InputFile getScreenshot(long userId) {
         return new InputFile(pages.get(userId).screenshot());
+    }
+
+    public String getBrowserProfileName(long userId) {
+        return pages.get(userId).getProfileName();
     }
 
     private DeliveryData createDeliveryData(Map.Entry<Long, BrowserPage> entry) {

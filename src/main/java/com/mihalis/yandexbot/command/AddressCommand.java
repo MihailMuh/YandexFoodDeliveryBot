@@ -31,7 +31,7 @@ public class AddressCommand extends Command {
 
     private void sendCurrentAddress(Parcel parcel) {
         Address address = addressRepository.getAddress(parcel.getUserId());
-        if (address.notEmpty()) {
+        if (address != null) {
             parcel.answer("Твой текущий адрес: " + address.getOriginalAddress());
         }
     }
