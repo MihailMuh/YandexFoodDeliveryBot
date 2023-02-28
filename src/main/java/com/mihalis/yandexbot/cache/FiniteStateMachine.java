@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 public class FiniteStateMachine {
     private final HashOperations<String, String, Object> finiteStateMachineStorage;
 
+    public long[] keys() {
+        return finiteStateMachineStorage.getOperations().keys("*").parallelStream().mapToLong(Long::parseLong).toArray();
+    }
+
     public void setValue(long userId, String key, Object value) {
         finiteStateMachineStorage.put(str(userId), key, value);
     }

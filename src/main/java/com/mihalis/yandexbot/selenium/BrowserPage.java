@@ -1,13 +1,13 @@
 package com.mihalis.yandexbot.selenium;
 
 import com.mihalis.yandexbot.model.Address;
+import com.mihalis.yandexbot.model.BrowserProfile;
 import com.mihalis.yandexbot.selenium.exceptions.NoDeliveryException;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -21,13 +21,14 @@ public class BrowserPage extends Page {
     @Getter
     private Address userAddress;
 
-
     private WebElement inputAddress;
 
-    public BrowserPage(String yandexUrl, WebDriver browser, String profileName) {
-        super(yandexUrl, browser, profileName);
+    private boolean firstConfirm = true;
 
-        if (clearProfile) {
+    public BrowserPage(String yandexUrl, WebDriver browser, BrowserProfile profile) {
+        super(yandexUrl, browser, profile);
+
+        if (profileIsNew()) {
             init();
         }
     }
@@ -44,11 +45,7 @@ public class BrowserPage extends Page {
     }
 
     public void clickNewAddressButton() {
-        if (!clearProfile) {
-            browser.findElement(cssSelector("html > body > div > header > div:nth-of-type(5) > button")).click();
-        } else {
-            browser.findElement(cssSelector("div[class='shown cc9u8rz']")).click();
-        }
+        browser.findElement(cssSelector("html > body > div > header > div:nth-of-type(5) > button")).click();
         log.info("NewAddressButton clicked");
     }
 
@@ -94,18 +91,30 @@ public class BrowserPage extends Page {
     }
 
     public String getDeliveryCost() {
-        if (!clearProfile) {
+        if (!firstConfirm) {
             refreshPage();
             log.info("refresh");
         } else {
-            clearProfile = false;
+            firstConfirm = false;
         }
 
-        By deliveryCostDiv = cssSelector("div[class='t1vrfrqt t18stym3 bw441np r88klks r1dbrdpx n10d4det l14lhr1r']");
-        WebElement deliveryCost = Wait().until(visibilityOfElementLocated(deliveryCostDiv));
+        Wait().until(visibilityOfElementLocated(cssSelector("button[class='d1tj8rdb']"))).click();
+
+        String[] deliveryInfoRaw = Wait().until(visibilityOfElementLocated(cssSelector("ul[class='cnw6bwb c3uyybh']"))).getText().split("\n");
+
+        for (String s : deliveryInfoRaw) {
+            System.out.println(s + " ----------");
+        }
+
+        String deliveryData = """
+                
+                Условия доставки:
+                    %s %s
+                    **%s**
+                """.formatted(deliveryInfoRaw[0], deliveryInfoRaw[1], deliveryInfoRaw[2]);
 
         log.info("Delivery cost received");
-        return deliveryCost.getText();
+        return deliveryData;
     }
 
     @SneakyThrows

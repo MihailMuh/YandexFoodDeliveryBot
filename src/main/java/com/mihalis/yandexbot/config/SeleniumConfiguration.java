@@ -1,9 +1,11 @@
 package com.mihalis.yandexbot.config;
 
+import com.mihalis.yandexbot.model.BrowserProfile;
 import com.mihalis.yandexbot.repository.ProfileRepository;
 import com.mihalis.yandexbot.selenium.BrowserPage;
 import com.mihalis.yandexbot.selenium.PagePool;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -34,22 +36,25 @@ public class SeleniumConfiguration {
         return new PagePool(executorService, pagePoolCapacity) {
             @Override
             protected BrowserPage page() {
-                String profileName = profileRepository.get();
-                return new BrowserPage(yandexUrl, createBrowser(profileName), profileName);
+                BrowserProfile profile = profileRepository.get();
+                return new BrowserPage(yandexUrl, createBrowser(profile.getName()), profile);
             }
         };
     }
 
+    @SneakyThrows
     private WebDriver createBrowser(String profileName) {
         ChromeOptions options = new ChromeOptions();
         options.addArguments(
                 "--no-sandbox",
                 "--start-maximized",
-                "--disable-dev-shm-usage",
-                "--allow-profiles-outside-user-dir",
-                "--user-data-dir=" + browserDataDir + profileName
+                "--user-data-dir=" + browserDataDir + "/profiles/" + profileName
         );
-        options.setHeadless(headless);
+        if (headless) {
+            options.addArguments(
+                    "--headless"
+            );
+        }
 
         return new ChromeDriver(options);
     }

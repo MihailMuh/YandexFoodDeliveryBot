@@ -1,7 +1,7 @@
 package com.mihalis.yandexbot.callback;
 
 import com.mihalis.yandexbot.cache.FiniteStateMachine;
-import com.mihalis.yandexbot.handler.ChooseDeliveryAddressHandler;
+import com.mihalis.yandexbot.messagehandler.ChooseDeliveryAddressHandler;
 import com.mihalis.yandexbot.model.Address;
 import com.mihalis.yandexbot.telegram.Parcel;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.mihalis.yandexbot.selenium;
 
-import lombok.Getter;
+import com.mihalis.yandexbot.model.BrowserProfile;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -19,27 +19,21 @@ abstract class Page {
 
     protected Logger log;
 
-    @Getter
-    private final String profileName;
+    private final BrowserProfile profile;
 
-    protected boolean clearProfile;
-
-    public Page(String url, WebDriver browser, String profileName) {
+    public Page(String url, WebDriver browser, BrowserProfile profile) {
         this.browser = browser;
-        this.profileName = profileName;
+        this.profile = profile;
         this.javaScript = (JavascriptExecutor) browser;
 
         log = LoggerFactory.getLogger(getClass().getSimpleName());
         log.info("Browser created!");
 
         browser.get(url);
-
-        checkProfileIsClear();
     }
 
     public void close() {
         try {
-            browser.close();
             browser.quit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,8 +44,12 @@ abstract class Page {
         return ((TakesScreenshot) browser).getScreenshotAs(OutputType.FILE);
     }
 
-    public boolean hasClearProfile() {
-        return clearProfile;
+    public boolean profileIsNew() {
+        return profile.isNew();
+    }
+
+    public String getProfileName() {
+        return profile.getName();
     }
 
     void reset() {
@@ -72,16 +70,5 @@ abstract class Page {
 
     protected WebDriverWait Wait(int seconds) {
         return new WebDriverWait(browser, Duration.ofSeconds(seconds));
-    }
-
-    protected void checkProfileIsClear() {
-        // there is no on page button "Enter delivery address"
-        clearProfile = (boolean) javaScript.executeScript("""
-                        return document.querySelector("div[class='shown cc9u8rz']") !== null;
-                """);
-
-        if (!clearProfile) {
-            log.info("User profile restored");
-        }
     }
 }

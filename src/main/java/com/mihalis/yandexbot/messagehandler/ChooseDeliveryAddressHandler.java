@@ -1,4 +1,4 @@
-package com.mihalis.yandexbot.handler;
+package com.mihalis.yandexbot.messagehandler;
 
 import com.mihalis.yandexbot.cache.FiniteStateMachine;
 import com.mihalis.yandexbot.model.Address;

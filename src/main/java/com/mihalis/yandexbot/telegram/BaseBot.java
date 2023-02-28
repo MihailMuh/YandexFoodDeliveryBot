@@ -2,8 +2,7 @@ package com.mihalis.yandexbot.telegram;
 
 import com.mihalis.yandexbot.callback.Callback;
 import com.mihalis.yandexbot.command.Command;
-import com.mihalis.yandexbot.handler.Handler;
-import lombok.Getter;
+import com.mihalis.yandexbot.messagehandler.Handler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -26,17 +25,8 @@ public abstract class BaseBot extends TelegramLongPollingBot {
 
     private static final ArrayList<Handler> handlers = new ArrayList<>();
 
-    @Getter
-    private final String botUsername;
-
-    @Getter
-    private final String botToken;
-
-    public BaseBot(DefaultBotOptions botOptions, String botUsername, String botToken, ConfigurableListableBeanFactory beanFactory) {
+    public BaseBot(DefaultBotOptions botOptions, ConfigurableListableBeanFactory beanFactory) {
         super(botOptions);
-
-        this.botUsername = botUsername;
-        this.botToken = botToken;
 
         registerCommands(beanFactory);
         registerCallbacks(beanFactory);

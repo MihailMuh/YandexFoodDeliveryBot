@@ -1,4 +1,4 @@
-package com.mihalis.yandexbot.handler;
+package com.mihalis.yandexbot.messagehandler;
 
 import com.mihalis.yandexbot.telegram.Parcel;
 import org.telegram.telegrambots.meta.api.objects.Message;

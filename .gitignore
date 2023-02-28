@@ -32,6 +32,6 @@ build/
 .vscode/
 
 docker/
-profiles/
+selenium/
 src/main/resources/application.properties
 *.log

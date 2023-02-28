@@ -16,6 +16,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 
 import java.util.concurrent.ExecutorService;
 
+import static com.mihalis.yandexbot.data.StringMessages.noDelivery;
+import static com.mihalis.yandexbot.data.StringMessages.toCancelSubscribe;
 import static java.lang.Integer.parseInt;
 
 @Slf4j
@@ -60,19 +62,18 @@ public class DeliveryAddressCallback implements Callback {
     }
 
     private void answerDeliveryCost(Parcel parcel, int addressRawIndex, String addressString) throws NoDeliveryException {
-        Address address = Address.of(addressString);
         long id = parcel.getUserId();
 
-        parcel.answerAsync(addressString + "\n" + yandexFoodService.getDeliveryCost(id, addressRawIndex));
+        parcel.answer(addressString + "\n" + yandexFoodService.getDeliveryCost(id, addressRawIndex));
+        parcel.answerAsync(toCancelSubscribe);
 
         profileRepository.set(id, yandexFoodService.getBrowserProfileName(id));
-        addressRepository.setAddress(id, address);
+        addressRepository.setAddress(id, Address.of(addressString));
         finiteStateMachine.delete(id);
     }
 
     private void answerNoDeliveryAddress(Parcel parcel) {
-        parcel.answer("Кажется сюда нет доставки...", getKeyboard(),
-                yandexFoodService.getScreenshot(parcel.getUserId()));
+        parcel.answer(noDelivery, getKeyboard(), yandexFoodService.getScreenshot(parcel.getUserId()));
     }
 
     private InlineKeyboardMarkup getKeyboard() {

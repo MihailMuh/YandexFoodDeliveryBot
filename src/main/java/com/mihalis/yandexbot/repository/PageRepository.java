@@ -54,7 +54,7 @@ public class PageRepository {
         BrowserPage page = pagePool.obtain(userId, address);
         pages.put(userId, page);
 
-        if (page.hasClearProfile()) {
+        if (page.profileIsNew()) {
             page.inputNewAddress();
         }
     }

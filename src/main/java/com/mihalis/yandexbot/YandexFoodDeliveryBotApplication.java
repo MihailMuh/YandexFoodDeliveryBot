@@ -26,6 +26,8 @@ public class YandexFoodDeliveryBotApplication {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         telegramBotsApi.registerBot(bot);
 
+        bot.cancelUserSessions();
+
         log.info("Telegram bot successfully registered!");
     }
 }

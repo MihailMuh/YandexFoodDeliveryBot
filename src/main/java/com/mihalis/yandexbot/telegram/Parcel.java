@@ -3,6 +3,7 @@ package com.mihalis.yandexbot.telegram;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.openqa.selenium.InvalidArgumentException;
+import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -13,6 +14,19 @@ public class Parcel {
     private final AbsSender bot;
 
     private final Message message;
+
+    public Parcel(Bot bot, String userId) {
+        this(bot, Long.parseLong(userId));
+    }
+
+    public Parcel(Bot bot, long userId) {
+        this.bot = bot;
+
+        Chat chat = new Chat();
+        chat.setId(userId);
+        message = new Message();
+        message.setChat(chat);
+    }
 
     public long getUserId() {
         return message.getChatId();

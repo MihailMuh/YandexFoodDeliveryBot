@@ -1,5 +1,6 @@
 package com.mihalis.yandexbot.repository;
 
+import com.mihalis.yandexbot.model.BrowserProfile;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -28,12 +29,12 @@ public class ProfileRepository {
     private final ValueOperations<String, String> storage;
 
     @Value("${app.browser.data.dir}")
-    private String browserProfilesDir;
+    private String browserDataDir;
 
     @PostConstruct
     public void init() {
-        String[] profiles = new File(browserProfilesDir).list();
-        if (profiles == null) {
+        String[] profiles = new File(browserDataDir + "/profiles").list();
+        if (profiles == null || profiles.length == 0) {
             return;
         }
 
@@ -49,7 +50,7 @@ public class ProfileRepository {
         int deleted = 0;
         for (String dirName : profiles) {
             if (!profilesFromCache.contains(dirName)) {
-                deleteDirectory(new File(browserProfilesDir, dirName));
+                deleteDirectory(new File(browserDataDir + "/profiles", dirName));
                 deleted++;
             } else {
                 busyProfilesName.add(dirName);
@@ -67,7 +68,18 @@ public class ProfileRepository {
         storage.set(String.valueOf(userId), profileName);
     }
 
-    public String get() {
-        return busyProfilesName.isEmpty() ? String.valueOf(maxProfileName.incrementAndGet()) : busyProfilesName.poll();
+    public synchronized BrowserProfile get() {
+        if (busyProfilesName.isEmpty()) {
+            String newProfileName = String.valueOf(maxProfileName.incrementAndGet());
+            copyBaseProfile(newProfileName);
+
+            return new BrowserProfile(newProfileName, true);
+        }
+        return new BrowserProfile(busyProfilesName.poll(), false);
+    }
+
+    @SneakyThrows
+    private void copyBaseProfile(String newProfileName) {
+        Runtime.getRuntime().exec("cp -r %1$s/base_profile %1$s/profiles/%2$s".formatted(browserDataDir, newProfileName));
     }
 }
